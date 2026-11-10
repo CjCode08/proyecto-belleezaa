@@ -1,0 +1,16 @@
+.catalog-cart-dialog::backdrop,
+.catalog-gallery-dialog::backdrop {
+  background: rgb(52 47 49 / 45%);
+  backdrop-filter: blur(8px);
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .catalog-cart-dialog[open] {
+    animation: catalog-cart-enter 220ms ease-out;
+  }
+
+  @keyframes catalog-cart-enter {
+    from { transform: translateX(100%); }
+    to { transform: translateX(0); }
+  }
+}

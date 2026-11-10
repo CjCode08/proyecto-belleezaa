@@ -1,0 +1,433 @@
+<!DOCTYPE html>
+
+<html class="light" lang="en"><head><meta charset="utf-8"/><meta content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" name="viewport"/><meta content="mobile_tab" name="shell-type"/><title>Cérise Studio</title><link href="https://fonts.googleapis.com" rel="preconnect"/><link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/><link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700&amp;family=Plus+Jakarta+Sans:wght@400;500;600;700&amp;display=swap" rel="stylesheet"/><link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/><script src="https://cdn.tailwindcss.com"></script><script id="tailwind-config">tailwind.config = { darkMode: "class", theme: { extend: { "colors": { "tertiary-fixed": "#ffdada", "primary": "#b50638", "surface-variant": "#e9e0e3", "primary-fixed": "#ffdadb", "surface-bright": "#fff8f9", "on-tertiary-container": "#fff8f7", "tertiary": "#b30e34", "surface-container-lowest": "#ffffff", "on-secondary-container": "#720429", "surface-container-low": "#fbf1f4", "secondary": "#a8334e", "surface-dim": "#e1d8da", "inverse-surface": "#342f31", "surface-container-highest": "#e9e0e3", "surface-tint": "#bb103c", "error": "#ba1a1a", "error-container": "#ffdad6", "on-primary": "#ffffff", "on-tertiary": "#ffffff", "primary-fixed-dim": "#ffb2b7", "on-secondary-fixed": "#400013", "on-surface-variant": "#5b4041", "on-error-container": "#93000a", "surface-container": "#f5ecee", "outline-variant": "#e3bebf", "on-tertiary-fixed-variant": "#920026", "on-primary-fixed-variant": "#92002a", "surface-container-high": "#efe6e8", "inverse-primary": "#ffb2b7", "on-secondary-fixed-variant": "#881938", "on-tertiary-fixed": "#40000c", "primary-container": "#d82c4e", "on-primary-container": "#fff7f7", "on-surface": "#1e1a1c", "tertiary-container": "#d72f4a", "outline": "#8f6f71", "secondary-container": "#fd748e", "background": "#fff8f9", "on-secondary": "#ffffff", "on-background": "#1e1a1c", "secondary-fixed-dim": "#ffb2bc", "inverse-on-surface": "#f8eef1", "on-error": "#ffffff", "secondary-fixed": "#ffd9dd", "on-primary-fixed": "#40000e", "tertiary-fixed-dim": "#ffb3b5", "surface": "#fff8f9" }, "borderRadius": { "DEFAULT": "0.25rem", "lg": "0.5rem", "xl": "0.75rem", "full": "9999px" }, "spacing": { "margin": "1rem", "space-md": "1rem", "gutter-md": "1.5rem", "gutter": "1rem", "margin-md": "2rem", "space-sm": "0.5rem", "space-xs": "0.25rem", "space-xl": "2.5rem", "gutter-lg": "2rem", "space-lg": "1.5rem", "margin-lg": "3.5rem" }, "fontFamily": { "body-lg": ["Plus Jakarta Sans"], "body-sm": ["Plus Jakarta Sans"], "headline-xl": ["Outfit"], "headline-md": ["Outfit"], "headline-sm": ["Outfit"], "display-lg-mobile": ["Outfit"], "label-md": ["Plus Jakarta Sans"], "body-md": ["Plus Jakarta Sans"], "badge-caps": ["Outfit"], "headline-xl-mobile": ["Outfit"], "display-lg": ["Outfit"], "label-sm": ["Plus Jakarta Sans"] }, "fontSize": { "body-lg": ["1.125rem", { "lineHeight": "1.75rem", "letterSpacing": "0em", "fontWeight": "400" }], "body-sm": ["0.8125rem", { "lineHeight": "1.25rem", "letterSpacing": "0.01em", "fontWeight": "400" }], "headline-xl": ["2.5rem", { "lineHeight": "3rem", "letterSpacing": "-0.015em", "fontWeight": "500" }], "headline-md": ["1.5rem", { "lineHeight": "2rem", "letterSpacing": "-0.01em", "fontWeight": "600" }], "headline-sm": ["1.125rem", { "lineHeight": "1.5rem", "letterSpacing": "0em", "fontWeight": "600" }], "display-lg-mobile": ["2.25rem", { "lineHeight": "2.75rem", "letterSpacing": "-0.02em", "fontWeight": "600" }], "label-md": ["0.875rem", { "lineHeight": "1.25rem", "letterSpacing": "0.02em", "fontWeight": "600" }], "body-md": ["0.9375rem", { "lineHeight": "1.5rem", "letterSpacing": "0em", "fontWeight": "400" }], "badge-caps": ["0.6875rem", { "lineHeight": "0.875rem", "letterSpacing": "0.08em", "fontWeight": "700" }], "headline-xl-mobile": ["1.75rem", { "lineHeight": "2.25rem", "letterSpacing": "-0.01em", "fontWeight": "500" }], "display-lg": ["3.5rem", { "lineHeight": "4rem", "letterSpacing": "-0.02em", "fontWeight": "600" }], "label-sm": ["0.75rem", { "lineHeight": "1rem", "letterSpacing": "0.05em", "fontWeight": "700" }] } } } }</script><style>@layer base{html,body{width:100%;margin:0;padding:0;}body{overscroll-behavior-y:none;}.pb-safe{padding-bottom:env(safe-area-inset-bottom,0px);}.pt-safe{padding-top:env(safe-area-inset-top,0px);}main>:first-child{margin-top:0!important;}main>:last-child{margin-bottom:0!important;}}::-webkit-scrollbar{display:none;}</style><style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+  </head><body class="bg-surface text-on-surface font-body-md flex flex-col min-h-screen"><header class="fixed top-0 w-full z-50 pt-safe bg-surface/85 backdrop-blur-xl shadow-[0_1px_8px_rgba(0,0,0,0.04)]"><div class="h-16 px-gutter flex items-center justify-between"><div class="flex items-center gap-space-xs"><button aria-label="Menu" class="w-11 h-11 flex items-center justify-center text-on-surface hover:text-primary transition-colors"><span class="material-symbols-outlined text-[24px]">menu</span></button><a class="text-center flex flex-col items-start justify-center ml-1" data-path="catalog" href="#"><span class="font-headline-sm text-headline-sm tracking-[0.18em] uppercase font-semibold text-on-surface">CÉRISE</span><span class="font-badge-caps text-badge-caps uppercase tracking-[0.25em] text-primary -mt-1">Studio</span></a></div><div class="flex items-center gap-space-xs"><button aria-label="Search" class="w-11 h-11 flex items-center justify-center text-on-surface hover:text-primary transition-colors"><span class="material-symbols-outlined text-[22px]">search</span></button><a aria-label="Shopping Bag" class="w-11 h-11 relative flex items-center justify-center text-on-surface hover:text-primary transition-colors" data-path="cart-bag" href="#"><span class="material-symbols-outlined text-[22px]">shopping_bag</span><span class="absolute top-2 right-2 w-4 h-4 bg-primary text-on-primary font-badge-caps text-badge-caps rounded-full flex items-center justify-center">2</span></a><div class="w-8 h-8 rounded-full bg-primary flex items-center justify-center ml-1"><span class="material-symbols-outlined text-on-primary text-[18px]">person</span></div></div></div></header><main class="flex flex-col relative w-full pt-16 pb-24 bg-surface min-h-screen"><div class="flex flex-col w-full">
+<!-- Editorial Hero Section -->
+<section class="px-gutter pt-space-md pb-space-sm flex flex-col">
+<div class="flex items-center justify-between gap-space-sm">
+<div class="flex flex-col">
+<span class="font-badge-caps text-badge-caps uppercase tracking-[0.2em] text-primary font-semibold">COLECCIÓN 2025</span>
+<h1 class="font-headline-xl-mobile text-headline-xl-mobile uppercase tracking-tight text-on-surface font-medium mt-0.5">CATÁLOGO</h1>
+</div>
+<div class="flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-secondary-fixed text-on-secondary-fixed">
+<span class="w-1.5 h-1.5 rounded-full bg-primary animate-pulse"></span>
+<span class="font-label-sm text-label-sm tracking-wide">Drop Diario</span>
+</div>
+</div>
+<p class="font-body-sm text-body-sm text-on-surface-variant mt-1.5 leading-relaxed max-w-sm">
+      Prendas contemporáneas de rotación continua. Diseñadas para tu ritmo diario con elegancia y frescura natural.
+    </p>
+<!-- Quick Pill Nav (Horizontally Scrollable) -->
+<div class="flex items-center gap-2 overflow-x-auto no-scrollbar py-space-sm -mx-gutter px-gutter mt-2">
+<button class="category-pill active-pill whitespace-nowrap px-4 py-1.5 rounded-full bg-primary text-on-primary font-label-md text-label-md shadow-sm transition-all duration-200">
+        Todo (148)
+      </button>
+<button class="category-pill whitespace-nowrap px-4 py-1.5 rounded-full bg-surface-container-high text-on-surface-variant font-label-md text-label-md hover:text-primary transition-all duration-200">
+        Vestidos
+      </button>
+<button class="category-pill whitespace-nowrap px-4 py-1.5 rounded-full bg-surface-container-high text-on-surface-variant font-label-md text-label-md hover:text-primary transition-all duration-200">
+        Tops &amp; Blusas
+      </button>
+<button class="category-pill whitespace-nowrap px-4 py-1.5 rounded-full bg-surface-container-high text-on-surface-variant font-label-md text-label-md hover:text-primary transition-all duration-200">
+        Blazers
+      </button>
+<button class="category-pill whitespace-nowrap px-4 py-1.5 rounded-full bg-surface-container-high text-on-surface-variant font-label-md text-label-md hover:text-primary transition-all duration-200">
+        Pantalones &amp; Faldas
+      </button>
+<button class="category-pill whitespace-nowrap px-4 py-1.5 rounded-full bg-surface-container-high text-on-surface-variant font-label-md text-label-md hover:text-primary transition-all duration-200">
+        Punto Delicado
+      </button>
+<button class="category-pill whitespace-nowrap px-4 py-1.5 rounded-full bg-surface-container-high text-on-surface-variant font-label-md text-label-md hover:text-primary transition-all duration-200">
+        Accesorios
+      </button>
+</div>
+<!-- Mobile Catalog Controls Bar -->
+<div class="flex items-center justify-between gap-2 mt-2 pt-2.5 bg-surface">
+<!-- Filter Button -->
+<button class="flex-1 h-10 px-3 rounded-lg bg-surface-container flex items-center justify-center gap-1.5 text-on-surface transition-colors active:scale-95" id="filterBtn">
+<span class="material-symbols-outlined text-[18px] text-primary">tune</span>
+<span class="font-label-md text-label-md font-semibold">Filtrar</span>
+<span class="w-5 h-5 rounded-full bg-primary text-on-primary font-label-sm text-label-sm flex items-center justify-center ml-0.5">3</span>
+</button>
+<!-- Sort Button -->
+<button class="flex-[1.2] h-10 px-3 rounded-lg bg-surface-container flex items-center justify-center gap-1.5 text-on-surface transition-colors active:scale-95" id="sortBtn">
+<span class="material-symbols-outlined text-[18px] text-on-surface-variant">swap_vert</span>
+<span class="font-label-md text-label-md truncate">Novedades</span>
+<span class="material-symbols-outlined text-[16px] text-on-surface-variant -ml-1">keyboard_arrow_down</span>
+</button>
+<!-- View Switcher -->
+<div class="h-10 p-1 rounded-lg bg-surface-container flex items-center gap-0.5">
+<button aria-label="Vista 2 Columnas" class="w-8 h-8 rounded-md bg-surface-container-lowest text-primary shadow-xs flex items-center justify-center transition-all" id="viewGridBtn">
+<span class="material-symbols-outlined text-[18px]">grid_view</span>
+</button>
+<button aria-label="Vista Editorial 1 Columna" class="w-8 h-8 rounded-md text-on-surface-variant flex items-center justify-center hover:text-on-surface transition-all" id="viewFeedBtn">
+<span class="material-symbols-outlined text-[18px]">view_agenda</span>
+</button>
+</div>
+</div>
+</section>
+<!-- Product Catalog Grid -->
+<section class="px-gutter pt-2 pb-space-md">
+<div class="grid grid-cols-2 gap-x-2.5 gap-y-5 transition-all duration-300" id="productGrid">
+<!-- Product Card 1 -->
+<article class="product-item group flex flex-col">
+<div class="relative w-full aspect-[3/4] rounded-xl overflow-hidden bg-surface-container-low shadow-sm">
+<img class="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105" data-alt="Chic woman standing in sunlit Parisian apartment wearing an elegant Rouge red satin shirt dress, soft cinematic fashion editorial photography, warm pastel cream tones and velvet cherry accents" src="https://lh3.googleusercontent.com/aida-public/AB6AXuCPfOfYPi4P6-x71XhxzpHeOm5aa_XMEDghOu5_jOihHJ3eZE-622hqymvlgcsMyQRdu626xzZVeD8dGwiHNkqsBh9ppBIaHf8h4eFa10jG9_L4sbWiWgwL3Q9P4hNh83zsCiiTAEsOKHwFx7bS7dLdnRN3-rJ792wuDGAjb4u7g1CnADHVKW30hU12J3me0gAfb_CXeNWlXEbRmKHb04QQogQQ4R_CU7hsGi95Fkw"/>
+<!-- Top Floating Badges -->
+<div class="absolute top-2 left-2 flex flex-col gap-1 items-start">
+<span class="px-2 py-0.5 rounded-full bg-primary text-on-primary font-badge-caps text-badge-caps uppercase tracking-wider font-semibold shadow-xs">
+              Quedan 3
+            </span>
+<span class="px-2 py-0.5 rounded-full bg-surface-bright/90 backdrop-blur-md text-primary font-badge-caps text-badge-caps uppercase tracking-wider font-bold">
+              -26%
+            </span>
+</div>
+<!-- Wishlist Heart Button -->
+<button aria-label="Guardar en favoritos" class="wishlist-btn absolute top-2 right-2 w-8 h-8 rounded-full bg-surface-bright/90 backdrop-blur-md text-on-surface flex items-center justify-center shadow-xs transition-transform active:scale-125">
+<span class="material-symbols-outlined text-[18px] transition-colors">favorite</span>
+</button>
+<!-- Quick Thumb Size Trigger -->
+<div class="absolute inset-x-2 bottom-2">
+<button class="quick-add-btn w-full h-8 rounded-lg bg-surface-bright/95 backdrop-blur-md text-primary font-label-sm text-label-sm font-semibold flex items-center justify-center gap-1 shadow-sm transition-transform active:scale-95">
+<span class="material-symbols-outlined text-[15px]">add</span>
+<span>Talla Rápida</span>
+</button>
+</div>
+</div>
+<div class="flex flex-col mt-2.5">
+<!-- Swatches -->
+<div class="flex items-center gap-1.5 mb-1.5">
+<span class="w-3.5 h-3.5 rounded-full bg-[#9e1b32] ring-2 ring-primary ring-offset-1 ring-offset-surface"></span>
+<span class="w-3 h-3 rounded-full bg-[#1e1a1c]"></span>
+<span class="w-3 h-3 rounded-full bg-[#e3bebf]"></span>
+</div>
+<h2 class="font-label-md text-label-md text-on-surface font-semibold truncate leading-tight">
+            Vestido Camisero Rouge
+          </h2>
+<div class="flex items-center gap-2 mt-1">
+<span class="font-headline-sm text-headline-sm font-bold text-primary">$42.50</span>
+<span class="font-body-sm text-body-sm text-on-surface-variant line-through">$58.00</span>
+</div>
+</div>
+</article>
+<!-- Product Card 2 -->
+<article class="product-item group flex flex-col">
+<div class="relative w-full aspect-[3/4] rounded-xl overflow-hidden bg-surface-container-low shadow-sm">
+<img class="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105" data-alt="High-fashion model wearing an ivory oversized structured crepe blazer against a soft warm minimalist blush backdrop, architectural silhouette, bright refined luxury lighting, Cérise aesthetic" src="https://lh3.googleusercontent.com/aida-public/AB6AXuBqkaD4IWiiHzFfyw8sXRLiqwgx7Mnshk3_KEOvavt6NYVfzmy7zKBvi6gtzXpi58nmbNNnWLRWPqfY3879FRvNUoDMqsizLz5jOM55gzQuaWQZFGGKyqP_OfrA1i5wU_6sVSXHU8kA6JqmPT9s_yU9SFvwrMa1amrLLcW3YnkK1E0TzXRneolDajOrj8jlO600sb6q2-oCM1WzFO2vXC-h-66B9LhysskdPsEgsAM"/>
+<div class="absolute top-2 left-2 flex flex-col gap-1 items-start">
+<span class="px-2 py-0.5 rounded-full bg-secondary-fixed text-on-secondary-fixed font-badge-caps text-badge-caps uppercase tracking-wider font-semibold shadow-xs">
+              Nuevo Hoy
+            </span>
+</div>
+<button aria-label="Guardar en favoritos" class="wishlist-btn absolute top-2 right-2 w-8 h-8 rounded-full bg-surface-bright/90 backdrop-blur-md text-on-surface flex items-center justify-center shadow-xs transition-transform active:scale-125">
+<span class="material-symbols-outlined text-[18px] transition-colors">favorite</span>
+</button>
+<div class="absolute inset-x-2 bottom-2">
+<button class="quick-add-btn w-full h-8 rounded-lg bg-surface-bright/95 backdrop-blur-md text-primary font-label-sm text-label-sm font-semibold flex items-center justify-center gap-1 shadow-sm transition-transform active:scale-95">
+<span class="material-symbols-outlined text-[15px]">add</span>
+<span>Añadir</span>
+</button>
+</div>
+</div>
+<div class="flex flex-col mt-2.5">
+<div class="flex items-center gap-1.5 mb-1.5">
+<span class="w-3.5 h-3.5 rounded-full bg-[#fcf9f7] ring-2 ring-primary ring-offset-1 ring-offset-surface"></span>
+<span class="w-3 h-3 rounded-full bg-[#201d1f]"></span>
+</div>
+<h2 class="font-label-md text-label-md text-on-surface font-semibold truncate leading-tight">
+            Blazer Oversize Silueta
+          </h2>
+<div class="flex items-center gap-2 mt-1">
+<span class="font-headline-sm text-headline-sm font-bold text-on-surface">$68.00</span>
+<span class="font-label-sm text-label-sm text-on-surface-variant font-medium">Crepé fino</span>
+</div>
+</div>
+</article>
+<!-- Product Card 3 -->
+<article class="product-item group flex flex-col">
+<div class="relative w-full aspect-[3/4] rounded-xl overflow-hidden bg-surface-container-low shadow-sm">
+<img class="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105" data-alt="Chic editorial close up portrait of woman wearing ribbed square neckline top in soft rose beige, delicate gold jewelry, daylight morning studio shot, soft shadows and luminous warm texture" src="https://lh3.googleusercontent.com/aida-public/AB6AXuA9u9cucAa_FfkuJ7BvacfEQ4h5P5icNr_VR6QBeLwZ9XtHEBX2qlKJbDD3skLSfKJDhHIoDS7ffv1YaRmhsDzrEEldkUA4OYqaB8A7Ikl-8A5vXx-HRRMPqs9P61oWHMcgh0bYvxFwl0Y8loITp_dwUkOhKGYtstsU-4u_m3WP8x-N6nn5MdXG2rewi2U-9FFnn0pQGq8upp9x2yiFf0_tAHP1nxuktl2iA0qr7WU"/>
+<div class="absolute top-2 left-2 flex flex-col gap-1 items-start">
+<span class="px-2 py-0.5 rounded-full bg-primary-fixed text-on-primary-fixed font-badge-caps text-badge-caps uppercase tracking-wider font-semibold shadow-xs">
+              Best Seller
+            </span>
+</div>
+<button aria-label="Guardar en favoritos" class="wishlist-btn absolute top-2 right-2 w-8 h-8 rounded-full bg-surface-bright/90 backdrop-blur-md text-on-surface flex items-center justify-center shadow-xs transition-transform active:scale-125">
+<span class="material-symbols-outlined text-[18px] transition-colors">favorite</span>
+</button>
+<div class="absolute inset-x-2 bottom-2">
+<button class="quick-add-btn w-full h-8 rounded-lg bg-surface-bright/95 backdrop-blur-md text-primary font-label-sm text-label-sm font-semibold flex items-center justify-center gap-1 shadow-sm transition-transform active:scale-95">
+<span class="material-symbols-outlined text-[15px]">add</span>
+<span>Talla Rápida</span>
+</button>
+</div>
+</div>
+<div class="flex flex-col mt-2.5">
+<div class="flex items-center gap-1.5 mb-1.5">
+<span class="w-3.5 h-3.5 rounded-full bg-[#f2e6e6] ring-2 ring-primary ring-offset-1 ring-offset-surface"></span>
+<span class="w-3 h-3 rounded-full bg-[#b50638]"></span>
+<span class="w-3 h-3 rounded-full bg-[#8f6f71]"></span>
+</div>
+<h2 class="font-label-md text-label-md text-on-surface font-semibold truncate leading-tight">
+            Top Ribbed Cuadrado
+          </h2>
+<div class="flex items-center gap-2 mt-1">
+<span class="font-headline-sm text-headline-sm font-bold text-primary">$24.90</span>
+<span class="font-body-sm text-body-sm text-on-surface-variant line-through">$29.90</span>
+</div>
+</div>
+</article>
+<!-- Product Card 4 -->
+<article class="product-item group flex flex-col">
+<div class="relative w-full aspect-[3/4] rounded-xl overflow-hidden bg-surface-container-low shadow-sm">
+<img class="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105" data-alt="Model walking leisurely in terracotta wide-leg pure linen trousers, minimalist architectural terrace, relaxed summer lifestyle fashion photography with natural organic drape" src="https://lh3.googleusercontent.com/aida-public/AB6AXuB2AMdJ-v-g2969A6H50-Zsto7p8OEtMhUt2pBhYadLxMLQRQUE4zyYNU_viyZEiZGwYsah2X2GROfIzwNcSErzbKXNqJG6Y7sgCSpk0lHIDT71EAr9ftIecwyIMoWTRrluykneVEDINfDmXpaE-bfdLWge8YtUK2oKxoNeqGJHTfbUkLDIT1UiZ2sIAP1a-NkmSnFwHEPN0fWBdATulcir3v_KpoeoVOEq0o9LX9k"/>
+<div class="absolute top-2 left-2 flex flex-col gap-1 items-start">
+<span class="px-2 py-0.5 rounded-full bg-surface-container-highest text-on-surface-variant font-badge-caps text-badge-caps uppercase tracking-wider font-semibold shadow-xs">
+              Drop #42
+            </span>
+</div>
+<button aria-label="Guardar en favoritos" class="wishlist-btn absolute top-2 right-2 w-8 h-8 rounded-full bg-surface-bright/90 backdrop-blur-md text-on-surface flex items-center justify-center shadow-xs transition-transform active:scale-125">
+<span class="material-symbols-outlined text-[18px] transition-colors">favorite</span>
+</button>
+<div class="absolute inset-x-2 bottom-2">
+<button class="quick-add-btn w-full h-8 rounded-lg bg-surface-bright/95 backdrop-blur-md text-primary font-label-sm text-label-sm font-semibold flex items-center justify-center gap-1 shadow-sm transition-transform active:scale-95">
+<span class="material-symbols-outlined text-[15px]">add</span>
+<span>Añadir</span>
+</button>
+</div>
+</div>
+<div class="flex flex-col mt-2.5">
+<div class="flex items-center gap-1.5 mb-1.5">
+<span class="w-3.5 h-3.5 rounded-full bg-[#bd5d44] ring-2 ring-primary ring-offset-1 ring-offset-surface"></span>
+<span class="w-3 h-3 rounded-full bg-[#1e1a1c]"></span>
+<span class="w-3 h-3 rounded-full bg-[#f0eae1]"></span>
+</div>
+<h2 class="font-label-md text-label-md text-on-surface font-semibold truncate leading-tight">
+            Pantalón Wide Leg Lino
+          </h2>
+<div class="flex items-center gap-2 mt-1">
+<span class="font-headline-sm text-headline-sm font-bold text-on-surface">$49.00</span>
+<span class="font-label-sm text-label-sm text-on-surface-variant font-medium">100% Lino</span>
+</div>
+</div>
+</article>
+<!-- Product Card 5 -->
+<article class="product-item group flex flex-col">
+<div class="relative w-full aspect-[3/4] rounded-xl overflow-hidden bg-surface-container-low shadow-sm">
+<img class="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105" data-alt="Close detail shot of a woman in cherry-tinted openwork knit delicate cardigan with mother of pearl buttons, warm morning balcony light, soft focus feminine luxury catalog visual" src="https://lh3.googleusercontent.com/aida-public/AB6AXuBJQeUXJ4UjPcvuhkGedLuRenL0dqY2zi0ggh8X2mFatPi7UgS88pwxwjjBuswfZi8IaqaJw9Fj-CxjZtfgPq-tqGsbxOKWk62qW7sv-yyDhzNMVNRXv_8NzyQL_6Q8fAn3aM6jaDgYroKdz9fdlla6nq_G1DLWKE9zIzB5IJFPsGv55U6wT-6oEfAv9IKxr1Dh4NlyjC44XL7Oy2sBuy2y8ARGotzotaFkhTFVsJU"/>
+<div class="absolute top-2 left-2 flex flex-col gap-1 items-start">
+<span class="px-2 py-0.5 rounded-full bg-primary text-on-primary font-badge-caps text-badge-caps uppercase tracking-wider font-semibold shadow-xs">
+              Quedan 2
+            </span>
+</div>
+<button aria-label="Guardar en favoritos" class="wishlist-btn absolute top-2 right-2 w-8 h-8 rounded-full bg-surface-bright/90 backdrop-blur-md text-on-surface flex items-center justify-center shadow-xs transition-transform active:scale-125">
+<span class="material-symbols-outlined text-[18px] transition-colors">favorite</span>
+</button>
+<div class="absolute inset-x-2 bottom-2">
+<button class="quick-add-btn w-full h-8 rounded-lg bg-surface-bright/95 backdrop-blur-md text-primary font-label-sm text-label-sm font-semibold flex items-center justify-center gap-1 shadow-sm transition-transform active:scale-95">
+<span class="material-symbols-outlined text-[15px]">add</span>
+<span>Talla Rápida</span>
+</button>
+</div>
+</div>
+<div class="flex flex-col mt-2.5">
+<div class="flex items-center gap-1.5 mb-1.5">
+<span class="w-3.5 h-3.5 rounded-full bg-[#d82c4e] ring-2 ring-primary ring-offset-1 ring-offset-surface"></span>
+<span class="w-3 h-3 rounded-full bg-[#efe0dd]"></span>
+</div>
+<h2 class="font-label-md text-label-md text-on-surface font-semibold truncate leading-tight">
+            Cardigan Punto Cherry
+          </h2>
+<div class="flex items-center gap-2 mt-1">
+<span class="font-headline-sm text-headline-sm font-bold text-primary">$39.90</span>
+<span class="font-body-sm text-body-sm text-on-surface-variant line-through">$48.00</span>
+</div>
+</div>
+</article>
+<!-- Product Card 6 -->
+<article class="product-item group flex flex-col">
+<div class="relative w-full aspect-[3/4] rounded-xl overflow-hidden bg-surface-container-low shadow-sm">
+<img class="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105" data-alt="Graceful model twirling in ruby red pleated midi skirt, sun flare reflection, contemporary high-end fashion catalog photo, dynamic fabric movement, chic editorial ambiance" src="https://lh3.googleusercontent.com/aida-public/AB6AXuCsZPxqTM6G1lCAIp6FgEWDQBAb1L1EaXMxmBwmb1Z6PLqnxCwZWtopxWaGdKDeFzzSfK8-r991z9V8fl3l7_QMntShV9nUAHxx8XVPdpuJwbCU8A0ILCguW2I3t1IXNbSNiTKz0-peqL3QhBvybaeWy59Q_BG7JyLBxhz7QqWo_GgEZwyIGGu9p4PsjRCE1jj7gjQ15akPMip6tCTLdf3E1Ab42r7Dh0_i-HqLZjY"/>
+<div class="absolute top-2 left-2 flex flex-col gap-1 items-start">
+<span class="px-2 py-0.5 rounded-full bg-secondary text-on-secondary font-badge-caps text-badge-caps uppercase tracking-wider font-semibold shadow-xs">
+              Edición Limitada
+            </span>
+</div>
+<button aria-label="Guardar en favoritos" class="wishlist-btn absolute top-2 right-2 w-8 h-8 rounded-full bg-surface-bright/90 backdrop-blur-md text-on-surface flex items-center justify-center shadow-xs transition-transform active:scale-125">
+<span class="material-symbols-outlined text-[18px] transition-colors">favorite</span>
+</button>
+<div class="absolute inset-x-2 bottom-2">
+<button class="quick-add-btn w-full h-8 rounded-lg bg-surface-bright/95 backdrop-blur-md text-primary font-label-sm text-label-sm font-semibold flex items-center justify-center gap-1 shadow-sm transition-transform active:scale-95">
+<span class="material-symbols-outlined text-[15px]">add</span>
+<span>Añadir</span>
+</button>
+</div>
+</div>
+<div class="flex flex-col mt-2.5">
+<div class="flex items-center gap-1.5 mb-1.5">
+<span class="w-3.5 h-3.5 rounded-full bg-[#b30e34] ring-2 ring-primary ring-offset-1 ring-offset-surface"></span>
+<span class="w-3 h-3 rounded-full bg-[#e3bebf]"></span>
+</div>
+<h2 class="font-label-md text-label-md text-on-surface font-semibold truncate leading-tight">
+            Falda Midi Plisada Rubí
+          </h2>
+<div class="flex items-center gap-2 mt-1">
+<span class="font-headline-sm text-headline-sm font-bold text-on-surface">$45.00</span>
+<span class="font-label-sm text-label-sm text-primary font-semibold">Exclusivo</span>
+</div>
+</div>
+</article>
+</div>
+</section>
+<!-- Interactive Pagination & Counter -->
+<section class="px-gutter pb-space-lg flex flex-col items-center">
+<div class="w-full flex items-center justify-between text-on-surface-variant font-label-sm text-label-sm mb-2">
+<span>Mostrando <strong class="text-on-surface font-semibold">6</strong> de 148 prendas</span>
+<span class="text-primary font-semibold">4% completado</span>
+</div>
+<!-- Subtle Progress Meter -->
+<div class="w-full h-1.5 bg-surface-container rounded-full overflow-hidden mb-4">
+<div class="h-full bg-primary rounded-full transition-all duration-500" style="width: 4.05%;"></div>
+</div>
+<!-- Load More Chic Button -->
+<button class="w-full h-12 rounded-xl bg-primary text-on-primary font-label-md text-label-md font-semibold flex items-center justify-center gap-2 shadow-md transition-all active:scale-[0.98] hover:bg-tertiary" id="loadMoreBtn">
+<span>Cargar más prendas chic</span>
+<span class="material-symbols-outlined text-[18px]">expand_more</span>
+</button>
+<!-- Trust Microbanner -->
+<div class="w-full mt-6 py-3.5 px-3 rounded-xl bg-surface-container-low flex items-center justify-around text-center gap-1">
+<div class="flex flex-col items-center gap-1">
+<span class="material-symbols-outlined text-primary text-[20px]">local_shipping</span>
+<span class="font-label-sm text-label-sm text-on-surface font-medium leading-tight">Envío Gratis &gt;$49</span>
+</div>
+<div class="w-px h-6 bg-outline-variant/40"></div>
+<div class="flex flex-col items-center gap-1">
+<span class="material-symbols-outlined text-primary text-[20px]">sync</span>
+<span class="font-label-sm text-label-sm text-on-surface font-medium leading-tight">Cambios Fáciles</span>
+</div>
+<div class="w-px h-6 bg-outline-variant/40"></div>
+<div class="flex flex-col items-center gap-1">
+<span class="material-symbols-outlined text-primary text-[20px]">verified_user</span>
+<span class="font-label-sm text-label-sm text-on-surface font-medium leading-tight">30 Días Garantía</span>
+</div>
+</div>
+</section>
+<!-- Quick Size Selector Bottom Sheet (Interactive) -->
+<div class="fixed inset-0 z-50 bg-inverse-surface/40 backdrop-blur-xs transition-opacity duration-300 opacity-0 pointer-events-none flex flex-col justify-end" id="sizeSheet">
+<div class="w-full bg-surface-bright rounded-t-2xl p-space-md shadow-xl transform translate-y-full transition-transform duration-300 flex flex-col pb-safe" id="sizeSheetContent">
+<div class="w-10 h-1 bg-outline-variant/60 rounded-full self-center mb-3"></div>
+<div class="flex items-center justify-between mb-4">
+<div>
+<span class="font-badge-caps text-badge-caps uppercase tracking-wider text-primary font-semibold">Selección Rápida</span>
+<h3 class="font-headline-sm text-headline-sm text-on-surface font-semibold" id="sheetTitle">Elige tu talla</h3>
+</div>
+<button class="w-8 h-8 rounded-full bg-surface-container flex items-center justify-center text-on-surface-variant" id="closeSheetBtn">
+<span class="material-symbols-outlined text-[18px]">close</span>
+</button>
+</div>
+<div class="grid grid-cols-4 gap-2 mb-4">
+<button class="h-11 rounded-lg bg-surface-container-low font-label-md text-label-md font-semibold text-on-surface flex items-center justify-center hover:bg-primary-fixed">XS</button>
+<button class="h-11 rounded-lg bg-surface-container-low font-label-md text-label-md font-semibold text-on-surface flex items-center justify-center hover:bg-primary-fixed">S</button>
+<button class="h-11 rounded-lg bg-primary text-on-primary font-label-md text-label-md font-semibold flex items-center justify-center">M</button>
+<button class="h-11 rounded-lg bg-surface-container-low font-label-md text-label-md font-semibold text-on-surface flex items-center justify-center opacity-40 line-through">L</button>
+</div>
+<button class="w-full h-12 rounded-xl bg-primary text-on-primary font-label-md text-label-md font-semibold flex items-center justify-center gap-2 active:scale-95 transition-transform" id="confirmAddBtn">
+<span class="material-symbols-outlined text-[18px]">shopping_bag</span>
+<span>Añadir a mi Bolsa • $42.50</span>
+</button>
+</div>
+</div>
+</div>
+<script>
+  // Category Pill Selection
+  const pills = document.querySelectorAll('.category-pill');
+  pills.forEach(pill => {
+    pill.addEventListener('click', () => {
+      pills.forEach(p => {
+        p.classList.remove('bg-primary', 'text-on-primary', 'shadow-sm');
+        p.classList.add('bg-surface-container-high', 'text-on-surface-variant');
+      });
+      pill.classList.remove('bg-surface-container-high', 'text-on-surface-variant');
+      pill.classList.add('bg-primary', 'text-on-primary', 'shadow-sm');
+    });
+  });
+
+  // Favorite / Wishlist Heart Microinteraction
+  const wishlistBtns = document.querySelectorAll('.wishlist-btn');
+  wishlistBtns.forEach(btn => {
+    btn.addEventListener('click', (e) => {
+      e.stopPropagation();
+      const icon = btn.querySelector('.material-symbols-outlined');
+      const isFilled = icon.style.fontVariationSettings.includes("'FILL' 1");
+      if (isFilled) {
+        icon.style.fontVariationSettings = "'FILL' 0";
+        icon.classList.remove('text-primary');
+      } else {
+        icon.style.fontVariationSettings = "'FILL' 1";
+        icon.classList.add('text-primary');
+      }
+    });
+  });
+
+  // Grid / Feed View Switcher
+  const viewGridBtn = document.getElementById('viewGridBtn');
+  const viewFeedBtn = document.getElementById('viewFeedBtn');
+  const productGrid = document.getElementById('productGrid');
+
+  viewFeedBtn.addEventListener('click', () => {
+    productGrid.classList.remove('grid-cols-2');
+    productGrid.classList.add('grid-cols-1');
+    viewFeedBtn.classList.add('bg-surface-container-lowest', 'text-primary', 'shadow-xs');
+    viewFeedBtn.classList.remove('text-on-surface-variant');
+    viewGridBtn.classList.remove('bg-surface-container-lowest', 'text-primary', 'shadow-xs');
+    viewGridBtn.classList.add('text-on-surface-variant');
+  });
+
+  viewGridBtn.addEventListener('click', () => {
+    productGrid.classList.remove('grid-cols-1');
+    productGrid.classList.add('grid-cols-2');
+    viewGridBtn.classList.add('bg-surface-container-lowest', 'text-primary', 'shadow-xs');
+    viewGridBtn.classList.remove('text-on-surface-variant');
+    viewFeedBtn.classList.remove('bg-surface-container-lowest', 'text-primary', 'shadow-xs');
+    viewFeedBtn.classList.add('text-on-surface-variant');
+  });
+
+  // Bottom Sheet Quick Add Interaction
+  const sizeSheet = document.getElementById('sizeSheet');
+  const sizeSheetContent = document.getElementById('sizeSheetContent');
+  const closeSheetBtn = document.getElementById('closeSheetBtn');
+  const quickAddBtns = document.querySelectorAll('.quick-add-btn');
+  const confirmAddBtn = document.getElementById('confirmAddBtn');
+
+  function openSheet() {
+    sizeSheet.classList.remove('pointer-events-none', 'opacity-0');
+    sizeSheet.classList.add('opacity-100');
+    sizeSheetContent.classList.remove('translate-y-full');
+  }
+
+  function closeSheet() {
+    sizeSheet.classList.add('opacity-0');
+    sizeSheetContent.classList.add('translate-y-full');
+    setTimeout(() => {
+      sizeSheet.classList.add('pointer-events-none');
+    }, 300);
+  }
+
+  quickAddBtns.forEach(btn => btn.addEventListener('click', openSheet));
+  closeSheetBtn.addEventListener('click', closeSheet);
+  sizeSheet.addEventListener('click', (e) => {
+    if (e.target === sizeSheet) closeSheet();
+  });
+  confirmAddBtn.addEventListener('click', () => {
+    confirmAddBtn.innerHTML = '<span class="material-symbols-outlined text-[18px] animate-bounce">check</span><span>¡Añadido con éxito!</span>';
+    setTimeout(() => {
+      closeSheet();
+      confirmAddBtn.innerHTML = '<span class="material-symbols-outlined text-[18px]">shopping_bag</span><span>Añadir a mi Bolsa • $42.50</span>';
+    }, 900);
+  });
+</script></main><nav class="fixed bottom-0 w-full z-50 pb-safe bg-surface/90 backdrop-blur-xl shadow-[0_-2px_12px_rgba(192,28,60,0.05)]" data-active-classes="text-primary font-semibold"><div class="h-16 px-gutter flex items-center justify-around"><a aria-current="page" class="flex flex-col items-center justify-center w-14 h-11 transition-colors text-primary font-semibold" data-path="catalog" href="#"><span class="material-symbols-outlined text-[22px]">grid_view</span><span class="font-label-sm text-label-sm mt-0.5">Shop</span></a><a class="flex flex-col items-center justify-center w-14 h-11 text-on-surface-variant hover:text-primary transition-colors" data-path="editorial-capsule" href="#"><span class="material-symbols-outlined text-[22px]">auto_awesome</span><span class="font-label-sm text-label-sm mt-0.5">Stories</span></a><a class="flex flex-col items-center justify-center w-14 h-11 text-on-surface-variant hover:text-primary transition-colors" data-path="curated-lookbook" href="#"><span class="material-symbols-outlined text-[22px]">style</span><span class="font-label-sm text-label-sm mt-0.5">Looks</span></a><a class="flex flex-col items-center justify-center w-14 h-11 text-on-surface-variant hover:text-primary transition-colors" data-path="wishlist" href="#"><span class="material-symbols-outlined text-[22px]">favorite</span><span class="font-label-sm text-label-sm mt-0.5">Saved</span></a><a class="flex flex-col items-center justify-center w-14 h-11 text-on-surface-variant hover:text-primary transition-colors" data-path="account" href="#"><span class="material-symbols-outlined text-[22px]">account_circle</span><span class="font-label-sm text-label-sm mt-0.5">Profile</span></a></div></nav></body></html>
