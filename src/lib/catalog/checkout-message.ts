@@ -50,12 +50,13 @@ function requireText(value: unknown): asserts value is string {
   }
 }
 
-export function checkoutWhatsAppUrl(order: SavedCheckout, phone: string): string {
+export function checkoutWhatsAppUrl(order: SavedCheckout, phone: string, mode: "test" | "production" = "test"): string {
   if (!/^[1-9][0-9]{7,14}$/.test(phone)) throw new Error("El número de WhatsApp no está configurado correctamente.");
   if (!/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(order.id) ||
-      order.isTest !== true || !Object.hasOwn(fulfillmentLabels, order.fulfillment) ||
+      (mode !== "test" && mode !== "production") ||
+      order.isTest !== (mode === "test") || !Object.hasOwn(fulfillmentLabels, order.fulfillment) ||
       !Object.hasOwn(paymentLabels, order.payment) || order.payment === "efectivo" && order.fulfillment !== "pickup") {
-    throw new Error("La solicitud de prueba guardada no es válida.");
+    throw new Error("La solicitud guardada no es válida para este modo.");
   }
   requireText(order.customerName);
   requireText(order.customerPhone);
@@ -94,7 +95,7 @@ export function checkoutWhatsAppUrl(order: SavedCheckout, phone: string): string
   }
 
   const message = [
-    "*SOLICITUD DE PRUEBA — NO ES UNA COMPRA REAL*",
+    mode === "test" ? "*SOLICITUD DE PRUEBA — NO ES UNA COMPRA REAL*" : "*SOLICITUD DE PEDIDO*",
     `*Solicitud:* ${order.id}`,
     "",
     "*DATOS DEL CLIENTE*",

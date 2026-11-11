@@ -80,6 +80,18 @@ test("incluye dirección guardada para delivery y no confunde el envío con el t
   assert.throws(() => checkoutWhatsAppUrl({ ...delivery, address: null }, "584120000000"));
 });
 
+test("distingue solicitudes reales de las de prueba sin permitir mezclar modos", () => {
+  const production = { ...order, isTest: false };
+  const message = new URL(checkoutWhatsAppUrl(production, "584120000000", "production")).searchParams.get("text");
+  assert.match(message, /^\*SOLICITUD DE PEDIDO\*/);
+  assert.doesNotMatch(message, /SOLICITUD DE PRUEBA/);
+  assert.match(message, /\*SKU:\* BL-001/);
+  assert.match(message, /\*Total de productos:\* \*\$24\.00\*/);
+  assert.throws(() => checkoutWhatsAppUrl(production, "584120000000"));
+  assert.throws(() => checkoutWhatsAppUrl(order, "584120000000", "production"));
+  assert.throws(() => checkoutWhatsAppUrl(production, "584120000000", "invalid"));
+});
+
 test("rechaza datos incoherentes, solicitudes reales y números inválidos", () => {
   for (const invalid of [
     { ...order, isTest: false },

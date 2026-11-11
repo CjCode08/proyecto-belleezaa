@@ -1,5 +1,24 @@
 This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
 
+## Preparación del checkout para Netlify
+
+El checkout actual solo funciona en desarrollo local y crea solicitudes de prueba. **No está habilitado para pedidos reales**, ni se activa por desplegar el catálogo.
+
+La función `netlify/edge-functions/checkout-rate-limit.js` prepara un límite de 5 solicitudes por 60 segundos por IP y dominio para la futura ruta `/api/checkout` (y su variante con barra final). La ruta real aún no existe y esta protección todavía no se ha probado en Netlify. Las personas que compartan una IP comparten el límite. Netlify advierte que puede tardar hasta 10 segundos en bloquear solicitudes; este límite complementa, pero no sustituye, el límite compartido de Supabase y Turnstile.
+
+El generador de mensajes distingue explícitamente solicitudes de prueba y reales; por defecto solo acepta pruebas. Esto no crea pedidos reales ni habilita el checkout.
+
+Antes de habilitar pedidos reales:
+
+1. Crear el sitio en Netlify conectando el repositorio y comprobar el catálogo desplegado, sin activar el checkout.
+2. Autorizar el dominio definitivo en el widget de Turnstile y configurar las variables de entorno necesarias en Netlify, sin publicar claves secretas ni colocarlas en variables `NEXT_PUBLIC_`.
+3. Revisar la propuesta `supabase/migrations/20261111150000_checkout_production_requests.sql` antes de aplicarla. Solo el usuario puede ejecutar SQL en Supabase; no recrear la base de datos. La función se probó en una base sintética aislada, no en la base existente; permite a `service_role` crear solicitudes reales, pero no habilita el formulario público.
+4. Implementar la ruta real `/api/checkout`, con activación explícita deshabilitada por defecto, validación de origen y Turnstile, precios y stock calculados en servidor, idempotencia y protección contra abuso.
+5. Comprobar en el despliegue que el límite por IP se aplica a la ruta real, incluyendo su barra final y la interacción con el adaptador de Next.js. Verificar los reintentos sin duplicados, los fallos de red y la apertura de WhatsApp, usando solicitudes identificadas de prueba.
+6. Activar pedidos reales únicamente después de verificar estas protecciones y acordar la activación.
+
+Referencias: [límites de Netlify](https://docs.netlify.com/manage/security/secure-access-to-sites/rate-limiting/), [Next.js en Netlify](https://docs.netlify.com/build/frameworks/framework-setup-guides/nextjs/overview/) y [hostnames de Turnstile](https://developers.cloudflare.com/turnstile/additional-configuration/hostname-management/).
+
 ## Getting Started
 
 First, run the development server:
