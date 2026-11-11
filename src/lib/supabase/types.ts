@@ -249,6 +249,11 @@ export type Database = {
           variants: Json;
         }[];
       };
+      catalog_filter_categories: { Args: Record<string, never>; Returns: string[] };
+      catalog_filtered_products: {
+        Args: { p_search: string; p_offset: number; p_audience: string; p_category: string };
+        Returns: Database["public"]["Functions"]["catalog_list_products"]["Returns"];
+      };
       inventory_exchange_rate_context: {
         Args: Record<string, never>;
         Returns: { rate: string; effective_date: string; updated_at: string; actor_name: string; comment: string | null; is_today: boolean }[];

@@ -1,14 +1,15 @@
 import Link from "next/link";
 import type { Metadata } from "next";
 import Image from "next/image";
+import { connection } from "next/server";
 import { Outfit, Plus_Jakarta_Sans } from "next/font/google";
-import { Search } from "lucide-react";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
-import { catalogPageHref, catalogPageSize, maxCatalogSearchLength, validCatalogSearch } from "@/lib/catalog/search";
+import { catalogPageHref, catalogPageSize, validCatalogAudience, validCatalogSearch } from "@/lib/catalog/search";
 import { catalogVariants } from "@/lib/catalog/cart";
 import { AddToCart, CartLink, CatalogCart } from "./cart";
 import { formatExchangeRateDate } from "@/lib/inventory/exchange-rate";
 import { ProductGallery } from "./product-gallery";
+import { CatalogFilters } from "./filters";
 
 export const instant = false;
 export const metadata: Metadata = {
@@ -20,18 +21,25 @@ const usd = new Intl.NumberFormat("es-VE", { style: "currency", currency: "USD" 
 const outfit = Outfit({ subsets: ["latin"], variable: "--font-catalog-heading", display: "swap" });
 const jakarta = Plus_Jakarta_Sans({ subsets: ["latin"], variable: "--font-catalog-body", display: "swap" });
 
-export default async function CatalogPage({ searchParams }: { searchParams: Promise<{ buscar?: string; pagina?: string }> }) {
+export default async function CatalogPage({ searchParams }: { searchParams: Promise<{ buscar?: string; pagina?: string; tipo?: string; categoria?: string }> }) {
+  await connection();
   const params = await searchParams;
   const search = typeof params.buscar === "string" ? params.buscar.trim() : "";
-  const valid = validCatalogSearch(search);
+  const audience = typeof params.tipo === "string" ? params.tipo : "";
+  const category = typeof params.categoria === "string" ? params.categoria : "";
+  const validSearch = validCatalogSearch(search);
+  const validFilters = validCatalogAudience(audience) && validCatalogSearch(category);
+  const valid = validSearch && validFilters;
   const requestedPage = Number(params.pagina ?? "1");
   const page = Number.isSafeInteger(requestedPage) && requestedPage > 0 && requestedPage <= 41667 ? requestedPage : 1;
   const supabase = await createSupabaseServerClient();
   const { data: rates, error: rateError } = await supabase.rpc("catalog_current_rate");
   if (rateError || !rates) throw new Error("No se pudo consultar la tasa del catálogo.", { cause: rateError });
   const rate = rates[0] ?? null;
+  const { data: categories, error: categoriesError } = await supabase.rpc("catalog_filter_categories");
+  if (categoriesError || !categories) throw new Error("No se pudieron consultar las categorías del catálogo.", { cause: categoriesError });
   const { data, error } = valid
-    ? await supabase.rpc("catalog_list_products", { p_search: search, p_offset: (page - 1) * catalogPageSize })
+    ? await supabase.rpc("catalog_filtered_products", { p_search: search, p_offset: (page - 1) * catalogPageSize, p_audience: audience, p_category: category })
     : { data: [], error: null };
   if (error) throw new Error("No se pudo consultar el catálogo público.", { cause: error });
   if (!data) throw new Error("El catálogo no devolvió resultados válidos.");
@@ -55,12 +63,15 @@ export default async function CatalogPage({ searchParams }: { searchParams: Prom
 
   return (
     <div className={`${outfit.variable} ${jakarta.variable} min-h-screen bg-[#fff8f9] font-[family-name:var(--font-catalog-body)] text-[#1e1a1c] lg:bg-white`}>
-      <CatalogCart rate={rate?.rate ?? null}>
+      <CatalogCart rate={rate?.rate ?? null} checkoutSiteKey={
+        process.env.NODE_ENV === "development" && process.env.CHECKOUT_TEST_ENABLED === "true"
+          ? process.env.NEXT_PUBLIC_TURNSTILE_SITE_KEY ?? null : null
+      }>
       <a href="#productos" className="sr-only focus:not-sr-only focus:absolute focus:left-4 focus:top-2 focus:z-50 focus:rounded-lg focus:bg-white focus:p-3 focus:text-[#92002a] focus:outline-2">Ir a los productos</a>
       <header className="border-b border-[#efe6e8] bg-[#fff8f9] lg:bg-white">
         <div className="mx-auto flex min-h-16 max-w-7xl items-center justify-between gap-4 px-4 sm:px-6 lg:px-8">
           <Link href="/catalogo" aria-label="Belleza, catálogo" className="font-[family-name:var(--font-catalog-heading)] text-xl font-bold uppercase tracking-[0.16em] focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-[#b50638]">
-            Belleza<span className="text-[#b50638]">.</span>
+            Belleezaa<span className="text-[#b50638]">.</span>
           </Link>
           <nav aria-label="Navegación del catálogo" className="hidden items-center gap-8 text-sm font-semibold lg:flex">
             <a href="#productos" className="text-[#b50638] underline decoration-2 underline-offset-8 focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-[#b50638]">Catálogo</a>
@@ -83,22 +94,22 @@ export default async function CatalogPage({ searchParams }: { searchParams: Prom
         {rate ? <p>Tasa del {formatExchangeRateDate(rate.effective_date)}: 1 USD = {rate.rate.replace(".", ",")} Bs.</p>
           : <p role="alert" className="font-semibold text-[#92002a]">No hay una tasa de cambio registrada para hoy. Los importes en bolívares y los pedidos no están disponibles.</p>}
         </div>
-        <form id="buscar" action="/catalogo" method="get" role="search" className="scroll-mt-4 border-b border-[#efe6e8] py-5">
-          <label htmlFor="catalog-search" className="block text-sm font-semibold">Buscar por producto o categoría</label>
-          <div className="mt-2 flex flex-wrap gap-2 sm:max-w-xl">
-            <input id="catalog-search" name="buscar" type="search" defaultValue={search}
-              maxLength={maxCatalogSearchLength} placeholder="Ej. vestido" className="min-h-11 min-w-0 flex-1 rounded-lg border border-[#d9c6c8] bg-white px-3 py-2 text-sm text-[#1e1a1c]" />
-            <button className="inline-flex min-h-11 items-center gap-2 rounded-lg bg-[#b50638] px-4 text-sm font-semibold text-white transition-colors hover:bg-[#92002a] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#b50638]"><Search aria-hidden="true" size={17} /> Buscar</button>
-            {search && <Link href="/catalogo" className="flex min-h-11 items-center rounded-lg border border-[#d9c6c8] bg-white px-3 text-sm font-semibold text-[#92002a] hover:bg-[#fbf1f4] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#b50638]">Limpiar</Link>}
-          </div>
-          {!valid && <p role="alert" className="mt-2 text-sm text-red-700">La búsqueda admite hasta 120 caracteres sin caracteres de control.</p>}
-        </form>
+        <div id="buscar" className="scroll-mt-4">
+          <div className="py-5 lg:hidden"><CatalogFilters key={JSON.stringify([search, audience, category])} search={search} audience={audience} category={category} categories={categories} mobile /></div>
+        </div>
+        {!validSearch && <p role="alert" className="mt-2 text-sm text-red-700">La búsqueda admite hasta 120 caracteres sin caracteres de control.</p>}
+        {!validFilters && <p role="alert" className="mt-2 text-sm text-red-700">Los filtros no son válidos. Selecciona un tipo y una categoría de la lista.</p>}
+        <div className="lg:grid lg:grid-cols-[230px_minmax(0,1fr)] lg:gap-8 lg:pt-6">
+        <aside aria-label="Filtros del catálogo" className="hidden border-r border-[#efe6e8] pr-6 lg:block">
+          <CatalogFilters key={JSON.stringify([search, audience, category])} search={search} audience={audience} category={category} categories={categories} mobile={false} />
+        </aside>
+        <div className="min-w-0">
         {valid && products.length === 0 ? (
           <p className="mt-6 rounded-xl bg-[#fbf1f4] p-5 text-sm text-[#5b4041]">
             {page > 1 ? "No hay productos en esta página." : "No se encontraron productos disponibles."}
           </p>
         ) : (
-          <div className="mt-6 grid grid-cols-2 gap-x-3 gap-y-8 md:grid-cols-3 md:gap-x-6 lg:grid-cols-4 lg:gap-x-5 lg:gap-y-10">
+          <div className="mt-6 grid grid-cols-2 gap-x-3 gap-y-8 md:grid-cols-3 md:gap-x-6 lg:mt-0 lg:gap-x-5 lg:gap-y-10">
             {products.map((product) => {
               const path = primaryImages.get(product.id);
               const imageUrl = path ? urls.get(path) : undefined;
@@ -127,10 +138,12 @@ export default async function CatalogPage({ searchParams }: { searchParams: Prom
           </div>
         )}
         {valid && <nav aria-label="Páginas del catálogo" className="mt-10 flex items-center justify-between border-t border-[#efe6e8] pt-5 text-sm">
-          {page > 1 ? <Link className="inline-flex min-h-11 items-center rounded-lg px-2 font-semibold text-[#92002a] hover:bg-[#fbf1f4] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#b50638]" href={catalogPageHref(page - 1, search)}>Anterior</Link> : <span />}
+          {page > 1 ? <Link className="inline-flex min-h-11 items-center rounded-lg px-2 font-semibold text-[#92002a] hover:bg-[#fbf1f4] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#b50638]" href={catalogPageHref(page - 1, search, audience, category)}>Anterior</Link> : <span />}
           <span>Página {page}</span>
-          {data.length > catalogPageSize ? <Link className="inline-flex min-h-11 items-center rounded-lg px-2 font-semibold text-[#92002a] hover:bg-[#fbf1f4] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#b50638]" href={catalogPageHref(page + 1, search)}>Siguiente</Link> : <span />}
+          {data.length > catalogPageSize ? <Link className="inline-flex min-h-11 items-center rounded-lg px-2 font-semibold text-[#92002a] hover:bg-[#fbf1f4] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#b50638]" href={catalogPageHref(page + 1, search, audience, category)}>Siguiente</Link> : <span />}
         </nav>}
+        </div>
+        </div>
       </main>
       </CatalogCart>
       <footer className="bg-[#1e1a1c] px-4 py-8 text-white sm:px-6 lg:px-8">

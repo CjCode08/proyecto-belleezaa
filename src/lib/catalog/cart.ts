@@ -1,7 +1,7 @@
 import { getProductCartTotal, type ProductPrices } from "../inventory/pricing.ts";
 import type { Json } from "../supabase/types";
 
-export type CatalogVariant = { id: string; size: string; color: string };
+export type CatalogVariant = { id: string; size: string; color: string; stock: number };
 export type CartItem = {
   productId: string;
   variantId: string;
@@ -12,14 +12,21 @@ export type CartItem = {
   quantity: number;
 };
 
+export type CartFeedback = { text: string; checkoutVersion: number | null };
+
+export function cartFeedbackText(feedback: CartFeedback, checkoutVersion: number): string {
+  return feedback.checkoutVersion !== null && feedback.checkoutVersion !== checkoutVersion ? "" : feedback.text;
+}
+
 export function catalogVariants(value: Json): CatalogVariant[] {
   if (!Array.isArray(value)) throw new Error("Las variantes del catálogo no son válidas.");
   return value.map((variant) => {
     if (!variant || typeof variant !== "object" || Array.isArray(variant) ||
-        typeof variant.id !== "string" || typeof variant.size !== "string" || typeof variant.color !== "string") {
+        typeof variant.id !== "string" || typeof variant.size !== "string" || typeof variant.color !== "string" ||
+        typeof variant.stock !== "number" || !Number.isSafeInteger(variant.stock) || variant.stock < 1) {
       throw new Error("Una variante del catálogo no es válida.");
     }
-    return { id: variant.id, size: variant.size, color: variant.color };
+    return { id: variant.id, size: variant.size, color: variant.color, stock: variant.stock };
   });
 }
 
@@ -39,6 +46,14 @@ export function cartTotals(items: CartItem[]) {
     if (!Number.isSafeInteger(totalCents)) throw new RangeError("El total del carrito es demasiado grande.");
   }
   return { prices, totalCents };
+}
+
+export function removeCheckedOutItems(
+  items: CartItem[],
+  checkedOut: { variantId: string; quantity: number }[],
+): CartItem[] {
+  const quantities = new Map(checkedOut.map((item) => [item.variantId, item.quantity]));
+  return items.filter((item) => quantities.get(item.variantId) !== item.quantity);
 }
 
 export function parseCart(raw: string): CartItem[] {
