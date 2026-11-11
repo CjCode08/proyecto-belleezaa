@@ -19,6 +19,12 @@ Antes de habilitar pedidos reales:
 
 Referencias: [límites de Netlify](https://docs.netlify.com/manage/security/secure-access-to-sites/rate-limiting/), [Next.js en Netlify](https://docs.netlify.com/build/frameworks/framework-setup-guides/nextjs/overview/) y [hostnames de Turnstile](https://developers.cloudflare.com/turnstile/additional-configuration/hostname-management/).
 
+## Dominios previstos
+
+La raíz de `www.belleezaa.com` y `belleezaa.com` redirige a `/catalogo`. La raíz de `inventario.belleezaa.com` redirige al panel de inventario, que conserva su login y permisos. En localhost y en el dominio de Netlify se conserva la redirección anterior al inventario; el catálogo sigue disponible en `/catalogo`.
+
+Los dominios deben asignarse en Netlify y configurarse en Cloudflare antes de probarlos. La separación de direcciones no sustituye la autenticación y RLS: las rutas internas siguen existiendo en el mismo despliegue.
+
 ## Getting Started
 
 First, run the development server:

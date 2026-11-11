@@ -40,7 +40,7 @@ El proyecto se ejecuta de forma secuencial. No desarrollar etapas futuras sin co
   - Carga de imágenes privada al bucket `inventario-privado` (JPEG/PNG/WebP ≤4 MB, máximo 5 imágenes).
 - **Auditoría obligatoria:** Registrar toda creación, edición, inhabilitación y eliminación detallando usuario, fecha y comentario.
 - **Catálogo:** búsqueda de productos por nombre, categoría o SKU de variante, con paginación.
-- Panel de inventario en `/inventario/panel`; `/` redirige allí por compatibilidad.
+- Panel de inventario en `/inventario/panel`; `/` redirige allí por compatibilidad, salvo en `www.belleezaa.com` y `belleezaa.com`, donde redirige al catálogo. `inventario.belleezaa.com` usará el mismo login protegido; DNS y despliegue pendientes de verificar.
 - Productos: clasificación múltiple por hombres, mujeres, niños y niñas; categorías persistentes. Las tallas se guardan en mayúsculas y los colores con inicial mayúscula.
 - Al crear o editar productos, nombre, categoría nueva, descripción y comentario llevan inicial mayúscula; SKU opcional en mayúsculas con letras, números y guiones.
 
@@ -49,6 +49,7 @@ El proyecto se ejecuta de forma secuencial. No desarrollar etapas futuras sin co
 - Datos de entrega y envío nacional se solicitan en el formulario y se guardan con el pedido; pickup sin dirección.
 - **E-commerce:** Delivery, envío nacional, pickup; pago en Bolívares o Binance, efectivo solo en retiro. Multimoneda USD/VES.
 - Vista previa pública `/catalogo` conectada mediante SQL `supabase/migrations/20261109140000_public_catalog_read.sql`; compras aún no implementadas.
+- Catálogo desplegado y verificado por el usuario en `belleezaa.netlify.app/catalogo`. Se acordó `www.belleezaa.com` como dominio principal y `inventario.belleezaa.com` para inventario; dominio y DNS aún no conectados.
 - Catálogo visual inspirado en `resources/DESIGN.md` y referencias móvil/escritorio; usa datos reales y no muestra promociones o funciones ficticias.
 - Carrito preliminar local en panel lateral con fondo difuminado: precios estimados por producto y variantes; aún no envía pedidos ni sustituye la validación del servidor.
 - Formulario: por defecto no guarda ni envía; efectivo solo en retiro. Modo de prueba local requiere configuración explícita. Despliegue previsto en Netlify; proteger el registro público antes de habilitar pedidos.
