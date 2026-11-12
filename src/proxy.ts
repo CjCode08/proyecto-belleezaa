@@ -1,8 +1,14 @@
 import { createServerClient } from "@supabase/ssr";
 import { NextResponse, type NextRequest } from "next/server";
 import type { Database } from "@/lib/supabase/types";
+import { isStoreRoot } from "@/lib/catalog/store-domain";
 
 export async function proxy(request: NextRequest) {
+  if (isStoreRoot(request.nextUrl.pathname, request.headers.get("host"))) {
+    const url = request.nextUrl.clone();
+    url.pathname = "/catalogo";
+    return NextResponse.redirect(url);
+  }
   let response = NextResponse.next({ request });
   const supabase = createServerClient<Database>(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
