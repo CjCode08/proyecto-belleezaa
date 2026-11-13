@@ -23,6 +23,19 @@ const jakarta = Plus_Jakarta_Sans({ subsets: ["latin"], variable: "--font-catalo
 
 export default async function CatalogPage({ searchParams }: { searchParams: Promise<{ buscar?: string; pagina?: string; tipo?: string; categoria?: string }> }) {
   await connection();
+  if (process.env.CATALOG_MAINTENANCE !== "false") {
+    return (
+      <main className="flex min-h-screen items-center justify-center bg-[#fff8f9] px-5 py-12 text-[#1e1a1c]">
+        <section className="w-full max-w-lg rounded-2xl border border-rose-100 bg-white p-8 text-center shadow-sm sm:p-10">
+          <p className="text-sm font-semibold uppercase tracking-[0.16em] text-[#b50638]">Belleezaa</p>
+          <h1 className="mt-4 text-2xl font-semibold sm:text-3xl">Estamos actualizando nuestro catálogo</h1>
+          <p className="mt-4 leading-relaxed text-slate-600">
+            Pronto podrás volver a consultar nuestros productos. Gracias por tu paciencia.
+          </p>
+        </section>
+      </main>
+    );
+  }
   const params = await searchParams;
   const search = typeof params.buscar === "string" ? params.buscar.trim() : "";
   const audience = typeof params.tipo === "string" ? params.tipo : "";
