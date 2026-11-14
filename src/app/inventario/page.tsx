@@ -127,17 +127,21 @@ export default async function InventoryPage({ searchParams }: { searchParams: Pr
                 <p className="mt-3 text-sm text-slate-600">
                   Catálogo: {product.catalog_visible ? "habilitado (sujeto a estado y disponibilidad)" : "oculto"}
                 </p>
+                <p className="mt-2 text-sm font-semibold text-slate-700">
+                  Unidades sueltas disponibles: {product.product_variants.reduce((total, variant) => total + variant.stock, 0)}
+                </p>
+                <h3 className="mt-5 text-sm font-semibold">Precios</h3>
                 <div className="mt-4 grid gap-3 text-sm sm:grid-cols-2">
                   {(["bolivares", "divisas"] as const).map((category) => {
                     const current = product.inventory_product_prices.find((item) => item.payment_category === category);
                     return <div key={category} className="rounded-xl bg-rose-50/50 p-3">
-                      <p className="font-semibold">Pago en {category === "bolivares" ? "bolívares" : "divisas"}</p>
-                      <p className="mt-1">Unitario: {price(current?.unit_price_usd ?? null)}</p>
-                      <p>Promoción por unidad: {price(current?.promotion_price_usd ?? null)}</p>
+                      <h4 className="font-semibold">Precios pago en {category === "bolivares" ? "bolívares" : "divisas"}</h4>
+                      <p className="mt-1">Precio unitario: {price(current?.unit_price_usd ?? null)}</p>
+                      <p>Precio promocional por unidad: {price(current?.promotion_price_usd ?? null)}</p>
                       {current?.promotion_price_usd !== null && current?.promotion_price_usd !== undefined &&
                         <p>Unidades por promoción: {current.promotion_quantity ?? "Pendiente de revisión"}</p>}
                       {current?.promotion_description && <p className="break-words text-slate-600">{current.promotion_description}</p>}
-                      <p>Bulto cerrado: {price(current?.bundle_price_usd ?? null)}</p>
+                      <p>Precio del bulto cerrado: {price(current?.bundle_price_usd ?? null)}</p>
                       {current?.needs_review && <p className="mt-1 text-amber-800">Precio pendiente de revisión</p>}
                     </div>;
                   })}
