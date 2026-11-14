@@ -5,19 +5,13 @@ import { redirect } from "next/navigation";
 import { requireInventoryProfile } from "@/lib/auth/inventory-access";
 import { removeInventoryImageObjects, uploadInventoryImages } from "@/lib/inventory/images";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
-import { capitalizeInitial, isValidSku, normalizeColor, normalizeSize, normalizeSku, validAudiences } from "@/lib/inventory/product-fields";
+import { capitalizeInitial, validAudiences } from "@/lib/inventory/product-fields";
+import { parseCommercialForm } from "@/lib/inventory/commercial-form";
 
 export type InventoryActionState = { error?: string };
 
 function text(value: FormDataEntryValue | null): string {
   return typeof value === "string" ? value.trim() : "";
-}
-
-function price(value: FormDataEntryValue | null): number | null {
-  const raw = text(value);
-  if (!/^(?:0|[1-9]\d*)(?:\.\d{1,2})?$/.test(raw)) return null;
-  const parsed = Number(raw);
-  return Number.isFinite(parsed) && parsed < 100000000 ? parsed : null;
 }
 
 const uuidPattern = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-8][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
@@ -34,50 +28,16 @@ export async function updateProduct(
   const category = newCategory === null ? text(formData.get("category")) : capitalizeInitial(text(newCategory));
   const selectedAudiences = formData.getAll("audiences");
   const comment = capitalizeInitial(text(formData.get("comment")));
-  const unitPrice = price(formData.get("unitPrice"));
-  const promoPrice = price(formData.get("promoPrice"));
-  const wholesalePrice = price(formData.get("wholesalePrice"));
+  const commercial = parseCommercialForm(formData, true);
   const fileEntries = formData.getAll("images");
   if (!validAudiences(selectedAudiences, false)) return { error: "La clasificación de la prenda no es válida." };
   if (!uuidPattern.test(productId) || !name || name.length > 120 || description.length > 2000 ||
       category.length > 120 || !comment || comment.length > 1000 ||
-      unitPrice === null || promoPrice === null || wholesalePrice === null ||
       fileEntries.some((file) => !(file instanceof File))) {
     return { error: "Revisa los datos del producto, precios, imágenes y comentario obligatorio." };
   }
+  if ("error" in commercial) return { error: commercial.error };
   const files = fileEntries.filter((file): file is File => file instanceof File && file.size > 0);
-
-  const variantIds = formData.getAll("variantId");
-  const sizes = formData.getAll("size");
-  const colors = formData.getAll("color");
-  const skus = formData.getAll("sku");
-  const stocks = formData.getAll("stock");
-  if (!sizes.length || sizes.length !== colors.length || sizes.length !== skus.length ||
-      sizes.length !== stocks.length || sizes.length !== variantIds.length) {
-    return { error: "Registra al menos una variante completa." };
-  }
-
-  const variants = sizes.map((size, index) => {
-    const id = text(variantIds[index]);
-    const stockText = text(stocks[index]);
-    return {
-      ...(id ? { id } : {}),
-      size: normalizeSize(text(size)),
-      color: normalizeColor(text(colors[index])),
-      sku: normalizeSku(text(skus[index])),
-      stock: /^(0|[1-9]\d*)$/.test(stockText) ? Number(stockText) : -1,
-    };
-  });
-  if (variants.some((variant) => !isValidSku(variant.sku))) {
-    return { error: "El SKU solo admite letras, números y guiones, hasta 100 caracteres." };
-  }
-  if (variants.some((variant) => (variant.id && !uuidPattern.test(variant.id)) ||
-      !variant.size || variant.size.length > 50 || !variant.color || variant.color.length > 50 ||
-      variant.sku.length > 100 || !Number.isSafeInteger(variant.stock) ||
-      variant.stock < 0 || variant.stock > 2147483647) ||
-      new Set(variants.flatMap((variant) => variant.id ? [variant.id] : [])).size !== variants.filter((variant) => variant.id).length) {
-    return { error: "Revisa las tallas, colores, SKU e inventario de las variantes." };
-  }
 
   const imageIds = formData.getAll("removeImageId").map((value) => text(value));
   if (imageIds.some((id) => !uuidPattern.test(id)) || new Set(imageIds).size !== imageIds.length) {
@@ -88,15 +48,15 @@ export async function updateProduct(
   const upload = await uploadInventoryImages(supabase, profile.id, productId, files);
   if ("error" in upload) return { error: upload.error };
 
-  const { data: removedPaths, error } = await supabase.rpc("inventory_update_product_v2", {
+  const { data: removedPaths, error } = await supabase.rpc("inventory_update_product_commercial", {
     p_product_id: productId,
     p_name: name,
     p_description: description,
     p_category: category,
-    p_unit_price: unitPrice,
-    p_promo_price: promoPrice,
-    p_wholesale_price: wholesalePrice,
-    p_variants: variants,
+    p_sku_base: commercial.base,
+    p_prices: commercial.prices,
+    p_bundles: commercial.bundles,
+    p_variants: commercial.variants,
     p_add_image_paths: upload.paths,
     p_remove_image_ids: imageIds,
     p_comment: comment,
@@ -157,6 +117,34 @@ export async function setProductStatus(
   revalidatePath("/inventario");
   revalidatePath("/inventario/auditoria");
   redirect(`/inventario?estado=${status}`);
+}
+
+export async function setCatalogVisibility(
+  _state: InventoryActionState,
+  formData: FormData,
+): Promise<InventoryActionState> {
+  const profile = await requireInventoryProfile();
+  if (profile.role !== "admin") return { error: "Solo el administrador puede cambiar la visibilidad en el catálogo." };
+  const productId = text(formData.get("productId"));
+  const visible = text(formData.get("visible"));
+  const comment = capitalizeInitial(text(formData.get("comment")));
+  if (!uuidPattern.test(productId) || !["true", "false"].includes(visible) || !comment || comment.length > 1000) {
+    return { error: "Indica un producto, una visibilidad y un comentario válidos." };
+  }
+  const supabase = await createSupabaseServerClient();
+  const { error } = await supabase.rpc("inventory_set_catalog_visibility", {
+    p_product_id: productId,
+    p_visible: visible === "true",
+    p_comment: comment,
+  });
+  if (error) {
+    console.error("Error al cambiar la visibilidad del catálogo:", error);
+    return { error: "No se pudo cambiar la visibilidad. Actualiza la página y vuelve a intentarlo." };
+  }
+  revalidatePath("/inventario");
+  revalidatePath("/inventario/auditoria");
+  revalidatePath("/catalogo");
+  redirect(`/inventario?visibilidad=${visible === "true" ? "habilitada" : "oculta"}`);
 }
 
 export async function deleteProduct(

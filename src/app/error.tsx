@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect } from "react";
+import Link from "next/link";
 
 export default function InventoryError({ error, reset }: { error: Error & { digest?: string }; reset: () => void }) {
   useEffect(() => {
@@ -21,6 +22,12 @@ export default function InventoryError({ error, reset }: { error: Error & { dige
         >
           Reintentar
         </button>
+        {process.env.NODE_ENV === "development" && (
+          <p className="mt-4 text-sm text-slate-600">
+            Si todavía no aplicaste los cambios de inventario, puedes abrir la{" "}
+            <Link href="/inventario/vista-previa" className="font-semibold text-rose-700 underline">vista previa local sin guardar</Link>.
+          </p>
+        )}
       </section>
     </main>
   );

@@ -5,7 +5,6 @@ export type InventoryDashboardData = {
   activeProducts: number;
   criticalVariants: number;
   totalStockUnits: number;
-  totalInventoryValueUsd: number;
   latestMovements: {
     id: string;
     actionType: string;
@@ -27,10 +26,10 @@ export async function getInventoryDashboardData(): Promise<InventoryDashboardDat
   const supabase = await createSupabaseServerClient();
 
   const [productsResult, variantsResult, movementsResult] = await Promise.all([
-    supabase.from("products").select("id, name, unit_price, status"),
+    supabase.from("products").select("id, name, status"),
     supabase
       .from("product_variants")
-      .select("id, size, color, stock, sku, product_id, products(name, unit_price)"),
+      .select("id, size, color, stock, sku, product_id, products(name)"),
     supabase
       .from("inventory_movements")
       .select("id, action_type, quantity_change, comment, created_at")
@@ -54,12 +53,6 @@ export async function getInventoryDashboardData(): Promise<InventoryDashboardDat
   const criticalVariants = variantsList.filter((v) => v.stock <= 3).length;
   const totalStockUnits = variantsList.reduce((acc, v) => acc + (v.stock ?? 0), 0);
 
-  const totalInventoryValueUsd = variantsList.reduce((acc, v) => {
-    const rel = Array.isArray(v.products) ? v.products[0] : v.products;
-    const unitPrice = rel?.unit_price ?? 0;
-    return acc + unitPrice * (v.stock ?? 0);
-  }, 0);
-
   const lowStockVariants = variantsList
     .filter((v) => v.stock <= 5)
     .sort((a, b) => a.stock - b.stock)
@@ -81,7 +74,6 @@ export async function getInventoryDashboardData(): Promise<InventoryDashboardDat
     activeProducts,
     criticalVariants,
     totalStockUnits,
-    totalInventoryValueUsd,
     latestMovements:
       movementsResult.data.map((m) => ({
         id: m.id,

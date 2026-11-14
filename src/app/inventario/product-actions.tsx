@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { useActionState } from "react";
-import { deleteProduct, setProductStatus } from "./actions";
+import { deleteProduct, setCatalogVisibility, setProductStatus } from "./actions";
 
 const fieldClass = "mt-2 w-full rounded-lg border border-slate-300 px-3 py-2 text-sm";
 
@@ -10,13 +10,16 @@ export function ProductActions({
   productId,
   status,
   canDelete,
+  catalogVisible,
 }: {
   productId: string;
   status: string;
   canDelete: boolean;
+  catalogVisible: boolean;
 }) {
   const [statusState, statusAction, statusPending] = useActionState(setProductStatus, {});
   const [deleteState, deleteAction, deletePending] = useActionState(deleteProduct, {});
+  const [visibilityState, visibilityAction, visibilityPending] = useActionState(setCatalogVisibility, {});
 
   return (
     <div className="mt-4 flex flex-wrap items-start gap-2 border-t border-rose-50 pt-4">
@@ -60,6 +63,20 @@ export function ProductActions({
       )}
       {statusState.error && <p role="alert" className="w-full text-sm text-red-700">{statusState.error}</p>}
 
+      {canDelete && (
+        <form action={visibilityAction} className="flex w-full flex-wrap items-start gap-2">
+          <input type="hidden" name="productId" value={productId} />
+          <input type="hidden" name="visible" value={String(!catalogVisible)} />
+          <label className="min-w-40 flex-1">
+            <span className="sr-only">Motivo del cambio de visibilidad en catálogo</span>
+            <input name="comment" required maxLength={1000} placeholder="Motivo del cambio en catálogo" className={fieldClass} />
+          </label>
+          <button disabled={visibilityPending} className="mt-2 rounded-lg border border-rose-300 px-3 py-2 text-sm font-semibold text-rose-700 disabled:opacity-60">
+            {visibilityPending ? "Guardando..." : catalogVisible ? "Ocultar del catálogo" : "Habilitar en catálogo"}
+          </button>
+          {visibilityState.error && <p role="alert" className="w-full text-sm text-red-700">{visibilityState.error}</p>}
+        </form>
+      )}
       {canDelete && (
         <details className="w-full rounded-lg border border-red-100 p-3">
           <summary className="cursor-pointer text-sm font-semibold text-red-700">Eliminar permanentemente</summary>

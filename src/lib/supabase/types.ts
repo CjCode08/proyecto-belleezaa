@@ -41,7 +41,9 @@ export type Database = {
           description: string | null;
           category: string | null;
           audiences: string[];
-          unit_price: number;
+          unit_price: number | null;
+          sku_base: string | null;
+          catalog_visible: boolean;
           promo_price: number | null;
           wholesale_price: number | null;
           status: string | null;
@@ -54,7 +56,9 @@ export type Database = {
           description?: string | null;
           category?: string | null;
           audiences?: string[];
-          unit_price: number;
+          unit_price?: number | null;
+          sku_base?: string | null;
+          catalog_visible?: boolean;
           promo_price?: number | null;
           wholesale_price?: number | null;
           status?: string | null;
@@ -67,7 +71,9 @@ export type Database = {
           description?: string | null;
           category?: string | null;
           audiences?: string[];
-          unit_price?: number;
+          unit_price?: number | null;
+          sku_base?: string | null;
+          catalog_visible?: boolean;
           promo_price?: number | null;
           wholesale_price?: number | null;
           status?: string | null;
@@ -83,6 +89,7 @@ export type Database = {
           size: string;
           color: string;
           sku: string | null;
+          sku_color_code: string | null;
           stock: number;
           created_at: string;
         };
@@ -92,6 +99,7 @@ export type Database = {
           size: string;
           color: string;
           sku?: string | null;
+          sku_color_code?: string | null;
           stock?: number;
           created_at?: string;
         };
@@ -101,11 +109,50 @@ export type Database = {
           size?: string;
           color?: string;
           sku?: string | null;
+          sku_color_code?: string | null;
           stock?: number;
           created_at?: string;
         };
         Relationships: [{
           foreignKeyName: "product_variants_product_id_fkey";
+          columns: ["product_id"];
+          isOneToOne: false;
+          referencedRelation: "products";
+          referencedColumns: ["id"];
+        }];
+      };
+      inventory_product_prices: {
+        Row: {
+          product_id: string;
+          payment_category: "bolivares" | "divisas";
+          unit_price_usd: number | null;
+          promotion_price_usd: number | null;
+          promotion_quantity: number | null;
+          promotion_description: string | null;
+          bundle_price_usd: number | null;
+          needs_review: boolean;
+        };
+        Insert: never;
+        Update: never;
+        Relationships: [{
+          foreignKeyName: "inventory_product_prices_product_id_fkey";
+          columns: ["product_id"];
+          isOneToOne: false;
+          referencedRelation: "products";
+          referencedColumns: ["id"];
+        }];
+      };
+      inventory_bundles: {
+        Row: {
+          id: string;
+          product_id: string;
+          assortment_description: string;
+          stock: number;
+        };
+        Insert: never;
+        Update: never;
+        Relationships: [{
+          foreignKeyName: "inventory_bundles_product_id_fkey";
           columns: ["product_id"];
           isOneToOne: false;
           referencedRelation: "products";
@@ -293,6 +340,29 @@ export type Database = {
         };
         Returns: string;
       };
+      inventory_create_product_commercial: {
+        Args: {
+          p_product_id: string;
+          p_name: string;
+          p_description: string;
+          p_category: string;
+          p_audiences: string[];
+          p_variants: Json;
+          p_image_paths: string[];
+          p_sku_base: string | null;
+          p_prices: Json;
+          p_bundles: Json;
+          p_comment: string;
+        };
+        Returns: string;
+      };
+      inventory_update_product_commercial: {
+        Args: Omit<Database["public"]["Functions"]["inventory_create_product_commercial"]["Args"], "p_image_paths"> & {
+          p_add_image_paths: string[];
+          p_remove_image_ids: string[];
+        };
+        Returns: string[];
+      };
       inventory_list_categories: { Args: Record<string, never>; Returns: string[] };
       inventory_create_product_v3: {
         Args: Database["public"]["Functions"]["inventory_create_product_v2"]["Args"] & { p_audiences: string[] };
@@ -320,6 +390,10 @@ export type Database = {
       };
       inventory_set_product_status: {
         Args: { p_product_id: string; p_status: string; p_comment: string };
+        Returns: undefined;
+      };
+      inventory_set_catalog_visibility: {
+        Args: { p_product_id: string; p_visible: boolean; p_comment: string };
         Returns: undefined;
       };
       inventory_delete_product: {

@@ -1,5 +1,5 @@
 -- PROPUESTA: no ejecutar hasta revisión y confirmación del usuario.
--- Requiere las migraciones de checkout de prueba, límite y SKU previamente aplicadas.
+-- Requiere las migraciones de checkout de prueba, límite, SKU y visibilidad previamente aplicadas.
 -- Solo prepara una función de servidor; no habilita el checkout público.
 begin;
 
@@ -132,7 +132,7 @@ begin
       select (i.value->>'variantId')::uuid as variant_id, (i.value->>'quantity')::integer as quantity
       from jsonb_array_elements(v_items) as i(value)
     )
-    select q.variant_id, q.quantity, v.stock, v.size, v.color, v.sku, p.name, p.status,
+    select q.variant_id, q.quantity, v.stock, v.size, v.color, v.sku, p.name, p.status, p.catalog_visible,
       p.unit_price, p.promo_price, p.wholesale_price,
       sum(q.quantity) over (partition by v.product_id) as product_quantity
     from requested q
@@ -140,7 +140,8 @@ begin
     left join public.products p on p.id = v.product_id
     order by q.variant_id
   loop
-    if v_line.status is distinct from 'activo' or v_line.stock is null or v_line.stock < v_line.quantity then
+    if v_line.status is distinct from 'activo' or v_line.catalog_visible is distinct from true
+      or v_line.stock is null or v_line.stock < v_line.quantity then
       raise exception 'Una variante no está disponible o no tiene suficiente stock' using errcode = 'P0002';
     end if;
     v_price := case when v_line.product_quantity >= 12 then v_line.wholesale_price

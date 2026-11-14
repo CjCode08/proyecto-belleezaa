@@ -9,17 +9,23 @@ import { secondaryButtonClass } from "../../ui";
 export const instant = false;
 
 export default async function EditProductPage({ params }: { params: Promise<{ productId: string }> }) {
-  await requireInventoryProfile();
+  const profile = await requireInventoryProfile();
   const { productId } = await params;
   const supabase = await createSupabaseServerClient();
   const { data: product, error } = await supabase
     .from("products")
-    .select("id, name, description, category, audiences, unit_price, promo_price, wholesale_price, product_variants(id, size, color, sku, stock), product_images(id, image_url, display_order, is_primary)")
+    .select("id, name, description, category, audiences, sku_base, product_variants(id, size, color, sku, sku_color_code, stock), product_images(id, image_url, display_order, is_primary)")
     .eq("id", productId)
     .eq("product_images.image_type", "almacen")
     .maybeSingle();
   if (error) throw new Error("No se pudo consultar el producto.", { cause: error });
   if (!product) notFound();
+  const [pricesResult, bundlesResult] = await Promise.all([
+    supabase.from("inventory_product_prices").select("*").eq("product_id", productId),
+    supabase.from("inventory_bundles").select("*").eq("product_id", productId),
+  ]);
+  if (pricesResult.error || !pricesResult.data) throw new Error("No se pudieron consultar los precios.", { cause: pricesResult.error });
+  if (bundlesResult.error || !bundlesResult.data) throw new Error("No se pudieron consultar los bultos.", { cause: bundlesResult.error });
   const { data: categories, error: categoriesError } = await supabase.rpc("inventory_list_categories");
   if (categoriesError || !categories) throw new Error("No se pudieron consultar las categorías.", { cause: categoriesError });
 
@@ -47,6 +53,9 @@ export default async function EditProductPage({ params }: { params: Promise<{ pr
             sku: variant.sku ?? "",
           }))}
           images={images}
+          prices={pricesResult.data}
+          bundles={bundlesResult.data}
+          canDelete={profile.role === "admin"}
         />
       </div>
     </main>

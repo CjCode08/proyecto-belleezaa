@@ -1,4 +1,4 @@
-import { AlertTriangle, Boxes, CircleDollarSign, ShieldCheck } from "lucide-react";
+import { AlertTriangle, Boxes, ShieldCheck } from "lucide-react";
 import { getInventoryDashboardData } from "@/lib/inventory/queries";
 import { requireInventoryProfile } from "@/lib/auth/inventory-access";
 import Link from "next/link";
@@ -7,14 +7,6 @@ import { createSupabaseServerClient } from "@/lib/supabase/server";
 import { formatExchangeRateDate } from "@/lib/inventory/exchange-rate";
 
 export const instant = false;
-
-function formatCurrency(value: number) {
-  return new Intl.NumberFormat("en-US", {
-    style: "currency",
-    currency: "USD",
-    maximumFractionDigits: 2,
-  }).format(value);
-}
 
 function formatTime(dateIso: string) {
   const now = Date.now();
@@ -49,6 +41,9 @@ export default async function Home() {
               <Link href="/inventario" className="rounded-xl bg-rose-600 px-4 py-2 text-sm font-semibold text-white hover:bg-rose-700">
                 Ver inventario
               </Link>
+              {process.env.NODE_ENV === "development" && <Link href="/inventario/vista-previa" className="rounded-xl border border-amber-300 px-4 py-2 text-sm font-semibold text-amber-900 hover:bg-amber-50">
+                Vista previa local
+              </Link>}
               {profile.role === "admin" && <Link href="/inventario/tasa" className="rounded-xl border border-rose-200 px-4 py-2 text-sm font-semibold text-rose-700 hover:bg-rose-50">
                 Tasa de cambio
               </Link>}
@@ -71,16 +66,7 @@ export default async function Home() {
           </p>
         )}
 
-        <section className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
-          <article className="rounded-2xl border border-rose-100 bg-white p-5 shadow-sm">
-            <div className="mb-4 flex items-center justify-between">
-              <p className="text-sm font-semibold text-slate-500">Valor total inventario</p>
-              <CircleDollarSign className="h-5 w-5 text-rose-500" />
-            </div>
-            <p className="text-3xl font-bold text-slate-900">{formatCurrency(data.totalInventoryValueUsd)}</p>
-            <p className="mt-1 text-sm text-slate-500">USD</p>
-          </article>
-
+        <section className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
           <article className="rounded-2xl border border-rose-100 bg-white p-5 shadow-sm">
             <div className="mb-4 flex items-center justify-between">
               <p className="text-sm font-semibold text-slate-500">Productos activos</p>

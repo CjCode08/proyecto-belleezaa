@@ -36,6 +36,7 @@ test("escapa comodines y caracteres especiales en ambas condiciones", async () =
 
 test("sin búsqueda no filtra el inventario", async () => {
   const params = await requestFor("");
+  assert.match(params.get("select"), /catalog_visible/);
   assert.equal(params.get("sku_match.sku"), null);
   assert.equal(params.get("or"), null);
 });

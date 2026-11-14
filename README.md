@@ -2,6 +2,20 @@ This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-
 
 ## Preparación del checkout para Netlify
 
+El catálogo está temporalmente en mantenimiento por defecto. `CATALOG_MAINTENANCE=false` muestra el catálogo anterior: no usar esta opción en producción hasta adaptar y verificar los nuevos precios. El inventario conserva su acceso habitual.
+
+## Transición del inventario comercial
+
+Los cambios locales integran SKU base, variantes agrupadas por talla y dos listas de precios. Cada lista registra precio unitario, una promoción por unidad con descripción opcional y precio del bulto cerrado de 12; el surtido y stock de bultos se registran aparte. Para cada promoción se seleccionan 2, 3 o 4 unidades por producto, tanto en bolívares como en divisas. La descripción requiere precio promocional y se mostrará en el catálogo cuando este se adapte; aún no está conectada al catálogo pausado. El cálculo y la validación del pedido se implementarán en carrito y servidor. Los precios anteriores se copian como referencia y deben revisarse; sus cantidades no se inventan y el mayorista anterior no se convierte automáticamente a precio de bulto. Sin SKU base, guardar elimina los SKU de las variantes del producto, previa confirmación. El valor total del inventario permanece oculto.
+
+El usuario ejecutó en Supabase `supabase/migrations/20261113190000_inventory_pricing_bundles_sku.sql` y confirmó que existen las nuevas tablas y funciones y las dos referencias de precios por producto. La migración revoca las funciones anteriores de creación y edición: debe desplegarse la aplicación nueva y verificarse el guardado real. No volver a ejecutar el SQL. El usuario decidió avanzar sin respaldo ni copia de pruebas; las pruebas funcionales anteriores se hicieron en una base sintética.
+
+La migración `supabase/migrations/20261113200000_inventory_catalog_visibility.sql` también fue ejecutada por el usuario, que confirmó la columna, el control y el trigger. No volver a ejecutarla. Agrega un control de catálogo separado del estado de inventario: solo el administrador puede cambiarlo con comentario auditado; los productos existentes conservan su configuración visible y los nuevos comienzan ocultos. Habilitarlo no garantiza su aparición: también se exige que el producto esté activo y tenga disponibilidad. Las consultas públicas de productos, categorías e imágenes y las nuevas solicitudes de prueba respetan esta configuración; las URL de imágenes ya firmadas pueden funcionar hasta que expiren. Los reintentos de solicitudes guardadas se conservan.
+
+Queda verificar el comportamiento real después del despliegue. El checkout de prueba sigue usando precios anteriores y no valida los precios nuevos: no utilizarlo para validar precios ni habilitar pedidos reales hasta adaptar y verificar catálogo, carrito y servidor. La propuesta de checkout real permanece sin aplicar.
+
+En desarrollo, con sesión de inventario iniciada, `/inventario/vista-previa` permite revisar el formulario sin consultar las nuevas tablas ni guardar datos o imágenes. Las categorías reales no se cargan en esta vista; no valida el guardado ni sustituye las pruebas con una base separada. No está disponible en producción.
+
 El checkout actual solo funciona en desarrollo local y crea solicitudes de prueba. **No está habilitado para pedidos reales**, ni se activa por desplegar el catálogo.
 
 La función `netlify/edge-functions/checkout-rate-limit.js` prepara un límite de 5 solicitudes por 60 segundos por IP y dominio para la futura ruta `/api/checkout` (y su variante con barra final). La ruta real aún no existe y esta protección todavía no se ha probado en Netlify. Las personas que compartan una IP comparten el límite. Netlify advierte que puede tardar hasta 10 segundos en bloquear solicitudes; este límite complementa, pero no sustituye, el límite compartido de Supabase y Turnstile.

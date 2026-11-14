@@ -20,7 +20,7 @@ function price(value: number | null) {
   }).format(value);
 }
 
-export default async function InventoryPage({ searchParams }: { searchParams: Promise<{ pagina?: string; buscar?: string; editado?: string; eliminado?: string; limpieza?: string; estado?: string }> }) {
+export default async function InventoryPage({ searchParams }: { searchParams: Promise<{ pagina?: string; buscar?: string; editado?: string; eliminado?: string; limpieza?: string; estado?: string; visibilidad?: string }> }) {
   const profile = await requireInventoryProfile();
   const params = await searchParams;
   const search = typeof params.buscar === "string" ? params.buscar.trim() : "";
@@ -40,6 +40,10 @@ export default async function InventoryPage({ searchParams }: { searchParams: Pr
   );
   const notice = params.eliminado === "1"
     ? "Producto eliminado; la auditoría se conservó."
+    : params.visibilidad === "habilitada"
+      ? "Producto habilitado para el catálogo; también debe estar activo y disponible."
+      : params.visibilidad === "oculta"
+        ? "Producto oculto del catálogo."
     : params.limpieza === "pendiente"
       ? "El cambio se guardó, pero algunos archivos de imagen requieren limpieza."
       : params.editado === "1"
@@ -120,11 +124,32 @@ export default async function InventoryPage({ searchParams }: { searchParams: Pr
                     {product.status ?? "Sin estado"}
                   </span>
                 </div>
-                <dl className="mt-4 grid grid-cols-3 gap-3 text-sm">
-                  <div><dt className="text-slate-500">Unitario</dt><dd className="font-semibold">{price(product.unit_price)}</dd></div>
-                  <div><dt className="text-slate-500">3 a 11</dt><dd className="font-semibold">{price(product.promo_price)}</dd></div>
-                  <div><dt className="text-slate-500">12 o más</dt><dd className="font-semibold">{price(product.wholesale_price)}</dd></div>
-                </dl>
+                <p className="mt-3 text-sm text-slate-600">
+                  Catálogo: {product.catalog_visible ? "habilitado (sujeto a estado y disponibilidad)" : "oculto"}
+                </p>
+                <div className="mt-4 grid gap-3 text-sm sm:grid-cols-2">
+                  {(["bolivares", "divisas"] as const).map((category) => {
+                    const current = product.inventory_product_prices.find((item) => item.payment_category === category);
+                    return <div key={category} className="rounded-xl bg-rose-50/50 p-3">
+                      <p className="font-semibold">Pago en {category === "bolivares" ? "bolívares" : "divisas"}</p>
+                      <p className="mt-1">Unitario: {price(current?.unit_price_usd ?? null)}</p>
+                      <p>Promoción por unidad: {price(current?.promotion_price_usd ?? null)}</p>
+                      {current?.promotion_price_usd !== null && current?.promotion_price_usd !== undefined &&
+                        <p>Unidades por promoción: {current.promotion_quantity ?? "Pendiente de revisión"}</p>}
+                      {current?.promotion_description && <p className="break-words text-slate-600">{current.promotion_description}</p>}
+                      <p>Bulto cerrado: {price(current?.bundle_price_usd ?? null)}</p>
+                      {current?.needs_review && <p className="mt-1 text-amber-800">Precio pendiente de revisión</p>}
+                    </div>;
+                  })}
+                </div>
+                {product.inventory_bundles.length > 0 && <>
+                  <h3 className="mt-5 text-sm font-semibold">Bultos cerrados</h3>
+                  <ul className="mt-2 divide-y divide-rose-50 text-sm">
+                    {product.inventory_bundles.map((bundle) => <li key={bundle.id} className="py-2">
+                      <p>{bundle.assortment_description} · {bundle.stock} bultos</p>
+                    </li>)}
+                  </ul>
+                </>}
                 <h3 className="mt-5 text-sm font-semibold">Variantes</h3>
                 {product.product_variants.length === 0 ? (
                   <p className="mt-2 text-sm text-slate-500">Sin variantes registradas.</p>
@@ -138,7 +163,7 @@ export default async function InventoryPage({ searchParams }: { searchParams: Pr
                     ))}
                   </ul>
                 )}
-                <ProductActions productId={product.id} status={product.status ?? "activo"} canDelete={profile.role === "admin"} />
+                <ProductActions productId={product.id} status={product.status ?? "activo"} catalogVisible={product.catalog_visible} canDelete={profile.role === "admin"} />
               </article>
             ))}
           </div>

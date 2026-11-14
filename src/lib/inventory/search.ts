@@ -26,7 +26,7 @@ export function inventoryProductsQuery(
 ) {
   let query = supabase
     .from("products")
-    .select("id, name, category, audiences, status, unit_price, promo_price, wholesale_price, product_variants(id, size, color, sku, stock), sku_match:product_variants(), product_images(id, image_url, display_order, is_primary)", { count: "exact" })
+    .select("id, name, category, audiences, status, catalog_visible, inventory_product_prices(payment_category, unit_price_usd, promotion_price_usd, promotion_quantity, promotion_description, bundle_price_usd, needs_review), inventory_bundles(id, assortment_description, stock), product_variants(id, size, color, sku, stock), sku_match:product_variants(), product_images(id, image_url, display_order, is_primary)", { count: "exact" })
     .order("name")
     .order("id")
     .eq("product_images.image_type", "almacen")
