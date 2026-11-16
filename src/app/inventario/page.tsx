@@ -128,7 +128,7 @@ export default async function InventoryPage({ searchParams }: { searchParams: Pr
                   Catálogo: {product.catalog_visible ? "habilitado (sujeto a estado y disponibilidad)" : "oculto"}
                 </p>
                 <p className="mt-2 text-sm font-semibold text-slate-700">
-                  Unidades sueltas disponibles: {product.product_variants.reduce((total, variant) => total + variant.stock, 0)}
+                  Unidades disponibles: {product.product_variants.reduce((total, variant) => total + variant.stock, 0)}
                 </p>
                 <h3 className="mt-5 text-sm font-semibold">Precios</h3>
                 <div className="mt-4 grid gap-3 text-sm sm:grid-cols-2">
