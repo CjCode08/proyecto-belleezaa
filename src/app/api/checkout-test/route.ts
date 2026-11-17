@@ -74,7 +74,8 @@ function response(body: object, status: number, retryAfter?: number) {
 
 export async function POST(request: Request) {
   // El límite por cliente de Netlify aún no está verificado: solo pruebas locales.
-  if (process.env.NODE_ENV !== "development" || process.env.CHECKOUT_TEST_ENABLED !== "true") {
+  const commercialCheckoutReady = false;
+  if (!commercialCheckoutReady || process.env.NODE_ENV !== "development" || process.env.CHECKOUT_TEST_ENABLED !== "true") {
     return response({ error: "El checkout de prueba no está habilitado." }, 503);
   }
   const localOrigin = process.env.CHECKOUT_TEST_ORIGIN ?? "http://localhost:3000";

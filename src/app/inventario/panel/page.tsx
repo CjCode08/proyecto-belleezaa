@@ -2,6 +2,7 @@ import { AlertTriangle, Boxes, ShieldCheck } from "lucide-react";
 import { getInventoryDashboardData } from "@/lib/inventory/queries";
 import { requireInventoryProfile } from "@/lib/auth/inventory-access";
 import Link from "next/link";
+import { connection } from "next/server";
 import { logout } from "../../login/actions";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
 import { formatExchangeRateDate } from "@/lib/inventory/exchange-rate";
@@ -19,6 +20,7 @@ function formatTime(dateIso: string) {
 }
 
 export default async function Home() {
+  await connection();
   const profile = await requireInventoryProfile();
   const data = await getInventoryDashboardData();
   const rateResult = profile.role === "admin"

@@ -1,18 +1,26 @@
 "use client";
 
 import { useActionState, useId, useState } from "react";
-import { editExchangeRate, saveExchangeRate } from "./actions";
+import { editExchangeRate, saveExchangeRate, type ExchangeRateState } from "./actions";
 
 const fieldClass = "mt-2 block min-h-11 w-full min-w-0 rounded-xl border border-slate-400 bg-white px-3 py-2 text-base text-slate-900";
 
 export type RateRecord = { rate_id: number; effective_date: string; rate: string; comment: string | null; updated_at: string };
 
 export function ExchangeRateForm({ record }: { record?: RateRecord }) {
-  const [state, action, pending] = useActionState(record ? editExchangeRate : saveExchangeRate, {});
   const id = useId();
   const [date, setDate] = useState(record?.effective_date ?? "");
   const [rate, setRate] = useState(record?.rate ?? "");
   const [comment, setComment] = useState(record?.comment ?? "");
+  const [state, action, pending] = useActionState(async (previous: ExchangeRateState, formData: FormData) => {
+    const result = await (record ? editExchangeRate : saveExchangeRate)(previous, formData);
+    if (!record && result.success) {
+      setDate("");
+      setRate("");
+      setComment("");
+    }
+    return result;
+  }, {});
   return (
     <form action={action} className="space-y-4">
       {record && <><input type="hidden" name="id" value={record.rate_id} /><input type="hidden" name="updatedAt" value={record.updated_at} /></>}

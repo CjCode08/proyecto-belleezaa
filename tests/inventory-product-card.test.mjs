@@ -51,7 +51,7 @@ test("la tarjeta suma variantes sin incluir bultos y muestra etiquetas de precio
     inventory_bundles: [{ id: "bulto", assortment_description: "Surtido", stock: 4 }],
     inventory_product_prices: [],
   }]);
-  assert.match(html, /Unidades sueltas disponibles: 10/);
+  assert.match(html, /Unidades disponibles: 10/);
   assert.match(html, />Precios<\/h3>/);
   assert.match(html, /Precios pago en bolívares/);
   assert.match(html, /Precios pago en divisas/);
@@ -66,6 +66,6 @@ test("un producto sin variantes muestra cero unidades sueltas", async () => {
     inventory_bundles: [{ id: "bulto", assortment_description: "Surtido", stock: 2 }],
     inventory_product_prices: [],
   }]);
-  assert.match(html, /Unidades sueltas disponibles: 0/);
+  assert.match(html, /Unidades disponibles: 0/);
   assert.match(html, /Sin variantes registradas/);
 });

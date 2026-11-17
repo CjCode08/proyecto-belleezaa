@@ -1,14 +1,12 @@
 import Link from "next/link";
 import type { Metadata } from "next";
-import Image from "next/image";
 import { connection } from "next/server";
 import { Outfit, Plus_Jakarta_Sans } from "next/font/google";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
 import { catalogPageHref, catalogPageSize, validCatalogAudience, validCatalogSearch } from "@/lib/catalog/search";
-import { catalogVariants } from "@/lib/catalog/cart";
-import { AddToCart, CartLink, CatalogCart } from "./cart";
+import { parseCommercialProduct } from "@/lib/catalog/commercial";
+import { CommercialCart, CommercialCartLink, ProductDetails } from "./commercial-cart";
 import { formatExchangeRateDate } from "@/lib/inventory/exchange-rate";
-import { ProductGallery } from "./product-gallery";
 import { CatalogFilters } from "./filters";
 
 export const instant = false;
@@ -17,15 +15,14 @@ export const metadata: Metadata = {
   description: "Catálogo de productos disponibles de Belleza.",
 };
 
-const usd = new Intl.NumberFormat("es-VE", { style: "currency", currency: "USD" });
 const outfit = Outfit({ subsets: ["latin"], variable: "--font-catalog-heading", display: "swap" });
 const jakarta = Plus_Jakarta_Sans({ subsets: ["latin"], variable: "--font-catalog-body", display: "swap" });
 
 export default async function CatalogPage({ searchParams }: { searchParams: Promise<{ buscar?: string; pagina?: string; tipo?: string; categoria?: string }> }) {
   await connection();
-  if (process.env.CATALOG_MAINTENANCE !== "false") {
+  if (process.env.NODE_ENV === "production" && process.env.CATALOG_MAINTENANCE === "true") {
     return (
-      <main className="flex min-h-screen items-center justify-center bg-[#fff8f9] px-5 py-12 text-[#1e1a1c]">
+      <main className="flex min-h-screen items-center justify-center bg-[#faf9f6] px-5 py-12 text-[#1e1a1c]">
         <section className="w-full max-w-lg rounded-2xl border border-rose-100 bg-white p-8 text-center shadow-sm sm:p-10">
           <p className="text-sm font-semibold uppercase tracking-[0.16em] text-[#b50638]">Belleezaa</p>
           <h1 className="mt-4 text-2xl font-semibold sm:text-3xl">Estamos actualizando nuestro catálogo</h1>
@@ -52,11 +49,11 @@ export default async function CatalogPage({ searchParams }: { searchParams: Prom
   const { data: categories, error: categoriesError } = await supabase.rpc("catalog_filter_categories");
   if (categoriesError || !categories) throw new Error("No se pudieron consultar las categorías del catálogo.", { cause: categoriesError });
   const { data, error } = valid
-    ? await supabase.rpc("catalog_filtered_products", { p_search: search, p_offset: (page - 1) * catalogPageSize, p_audience: audience, p_category: category })
+    ? await supabase.rpc("catalog_commercial_products", { p_search: search, p_offset: (page - 1) * catalogPageSize, p_audience: audience, p_category: category })
     : { data: [], error: null };
   if (error) throw new Error("No se pudo consultar el catálogo público.", { cause: error });
   if (!data) throw new Error("El catálogo no devolvió resultados válidos.");
-  const products = data.slice(0, catalogPageSize);
+  const products = data.slice(0, catalogPageSize).map(parseCommercialProduct);
   const { data: imageRows, error: imagesError } = products.length
     ? await supabase.rpc("catalog_product_images", { p_product_ids: products.map((product) => product.id) })
     : { data: [], error: null };
@@ -73,15 +70,17 @@ export default async function CatalogPage({ searchParams }: { searchParams: Prom
     throw new Error("No se pudieron preparar las imágenes del catálogo.", { cause: signedError });
   }
   const urls = new Map(signedImages.map((image) => [image.path!, image.signedUrl!]));
+  const checkoutMode = process.env.NODE_ENV === "development" ? "test" : "production";
+  const checkoutSiteKey = (
+    (checkoutMode === "test" && process.env.CHECKOUT_TEST_ENABLED === "true") ||
+    (checkoutMode === "production" && process.env.CHECKOUT_PRODUCTION_ENABLED === "true" && process.env.CHECKOUT_PRODUCTION_ORIGIN === "https://www.belleezaa.com" && process.env.CATALOG_MAINTENANCE === "false")
+  ) ? process.env.NEXT_PUBLIC_TURNSTILE_SITE_KEY ?? null : null;
 
   return (
-    <div className={`${outfit.variable} ${jakarta.variable} min-h-screen bg-[#fff8f9] font-[family-name:var(--font-catalog-body)] text-[#1e1a1c] lg:bg-white`}>
-      <CatalogCart rate={rate?.rate ?? null} checkoutSiteKey={
-        process.env.NODE_ENV === "development" && process.env.CHECKOUT_TEST_ENABLED === "true"
-          ? process.env.NEXT_PUBLIC_TURNSTILE_SITE_KEY ?? null : null
-      }>
+    <div className={`${outfit.variable} ${jakarta.variable} min-h-screen bg-[#faf9f6] font-[family-name:var(--font-catalog-body)] text-[#1e1a1c]`}>
+      <CommercialCart rate={rate?.rate ?? null} checkoutMode={checkoutMode} checkoutSiteKey={checkoutSiteKey}>
       <a href="#productos" className="sr-only focus:not-sr-only focus:absolute focus:left-4 focus:top-2 focus:z-50 focus:rounded-lg focus:bg-white focus:p-3 focus:text-[#92002a] focus:outline-2">Ir a los productos</a>
-      <header className="border-b border-[#efe6e8] bg-[#fff8f9] lg:bg-white">
+      <header className="border-b border-[#e8e6e1] bg-[#faf9f6]">
         <div className="mx-auto flex min-h-16 max-w-7xl items-center justify-between gap-4 px-4 sm:px-6 lg:px-8">
           <Link href="/catalogo" aria-label="Belleza, catálogo" className="font-[family-name:var(--font-catalog-heading)] text-xl font-bold uppercase tracking-[0.16em] focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-[#b50638]">
             Belleezaa<span className="text-[#b50638]">.</span>
@@ -90,7 +89,7 @@ export default async function CatalogPage({ searchParams }: { searchParams: Prom
             <a href="#productos" className="text-[#b50638] underline decoration-2 underline-offset-8 focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-[#b50638]">Catálogo</a>
             <a href="#buscar" className="text-[#5b4041] hover:text-[#b50638] focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-[#b50638]">Buscar prendas</a>
           </nav>
-          <CartLink />
+          <CommercialCartLink />
         </div>
       </header>
       <main id="productos" className="mx-auto max-w-7xl scroll-mt-4 px-4 pb-12 sm:px-6 lg:px-8">
@@ -102,7 +101,7 @@ export default async function CatalogPage({ searchParams }: { searchParams: Prom
         </section>
         <div className="mt-5 flex flex-wrap items-center justify-between gap-2 text-xs leading-5 text-[#5b4041]">
         <p>
-          Vista previa del catálogo: la compra todavía está en preparación.
+          Los productos y promociones son de prueba y no son válidos para pedidos. {checkoutSiteKey ? checkoutMode === "test" ? "Las solicitudes son de prueba, no compras reales." : "El vendedor confirmará precios y disponibilidad." : "Los pedidos todavía no están habilitados."}
         </p>
         {rate ? <p>Tasa del {formatExchangeRateDate(rate.effective_date)}: 1 USD = {rate.rate.replace(".", ",")} Bs.</p>
           : <p role="alert" className="font-semibold text-[#92002a]">No hay una tasa de cambio registrada para hoy. Los importes en bolívares y los pedidos no están disponibles.</p>}
@@ -127,26 +126,7 @@ export default async function CatalogPage({ searchParams }: { searchParams: Prom
               const path = primaryImages.get(product.id);
               const imageUrl = path ? urls.get(path) : undefined;
               if (path && !imageUrl) throw new Error("No se pudo preparar una imagen del catálogo.");
-              return (
-              <article key={product.id} className="group flex min-w-0 flex-col">
-                <div className="relative overflow-hidden rounded-xl bg-[#f5ecee] lg:rounded-none">
-                {imageUrl ? (
-                  <Image src={imageUrl} alt={`Imagen de ${product.name}`} width={800} height={600}
-                    unoptimized className="aspect-[3/4] w-full object-cover transition-transform duration-300 motion-safe:group-hover:scale-[1.03]" />
-                ) : <div className="flex aspect-[3/4] items-center justify-center p-4 text-center text-sm text-[#5b4041]">Imagen de catálogo pendiente</div>}
-                {imageUrl && <ProductGallery productId={product.id} name={product.name} />}
-                </div>
-                <div className="flex flex-1 flex-col pt-3">
-                  <p className="break-words text-xs font-semibold uppercase tracking-wide text-[#92002a]">{product.category || "Colección"}</p>
-                  <h2 className="mt-1 break-words font-[family-name:var(--font-catalog-heading)] text-base font-semibold leading-5 lg:uppercase lg:tracking-wide">{product.name}</h2>
-                  {product.description && <p className="mt-1 whitespace-pre-wrap break-words text-xs leading-5 text-[#5b4041]">{product.description}</p>}
-                  <p className="mt-2 font-[family-name:var(--font-catalog-heading)] text-lg font-bold text-[#b50638]">{usd.format(product.unit_price)} <span className="font-[family-name:var(--font-catalog-body)] text-xs font-normal text-[#5b4041]">por unidad</span></p>
-                  <p className="mt-2 text-xs leading-5 text-[#5b4041]">Desde 12 Pzs: {product.wholesale_price === null ? "Sin definir" : usd.format(product.wholesale_price)} c/u</p>
-                  <AddToCart productId={product.id} name={product.name} variants={catalogVariants(product.variants)}
-                    prices={{ unitPrice: product.unit_price, promoPrice: product.promo_price, wholesalePrice: product.wholesale_price }} />
-                </div>
-              </article>
-              );
+              return <article key={product.id} className="min-w-0"><ProductDetails product={product} imageUrl={imageUrl} rate={rate?.rate ?? null} /></article>;
             })}
           </div>
         )}
@@ -158,7 +138,7 @@ export default async function CatalogPage({ searchParams }: { searchParams: Prom
         </div>
         </div>
       </main>
-      </CatalogCart>
+      </CommercialCart>
       <footer className="bg-[#1e1a1c] px-4 py-8 text-white sm:px-6 lg:px-8">
         <div className="mx-auto max-w-7xl">
           <p className="font-[family-name:var(--font-catalog-heading)] text-lg font-bold uppercase tracking-[0.14em]">Belleza<span className="text-[#ffb2b7]">.</span></p>
