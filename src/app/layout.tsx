@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
+import { ThemeToggle } from "./theme-toggle";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -23,7 +24,14 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
       lang="es"
       className={`${geistSans.variable} ${geistMono.variable} h-full antialiased`}
     >
-      <body className="min-h-full flex flex-col">{children}</body>
+      <body className="min-h-full flex flex-col">
+        <div className="theme-control-bar flex min-h-12 items-center justify-end border-b px-4 sm:px-6 lg:px-8">
+          <div className="mx-auto flex w-full max-w-7xl justify-end">
+            <ThemeToggle />
+          </div>
+        </div>
+        {children}
+      </body>
     </html>
   );
 }

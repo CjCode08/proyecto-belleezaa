@@ -3,13 +3,14 @@
 ## Estado verificado 17/11/2026
 - Se revisó el conjunto actual de cambios del proyecto y se validó la coherencia entre inventario, catálogo comercial y checkout preparado.
 - Los ajustes principales incluyen: precios con bultos y promociones, SKU base/variantes, control de visibilidad del catálogo, tasas manuales y pruebas funcionales específicas.
+- Catálogo e inventario comparten un selector persistente de tema claro/oscuro; las tarjetas muestran resumen en divisas y el detalle conserva ambas listas de precios.
 - El catálogo comercial se activa al desplegar; `CATALOG_MAINTENANCE=true` lo pausa. Productos y promociones actuales son de prueba y no válidos para pedidos; conservar sus datos. El usuario confirmó la tasa del 17/11/2026 cargada. El checkout público continúa deshabilitado.
 
 ## 1. Stack Tecnológico y Directrices Generales
 - **Stack obligatorio:** Next.js, Tailwind CSS, Supabase, Git y Visual Studio Code.
 - **Base de datos:** La base de datos en Supabase ya está inicializada; **no recrearla** bajo ninguna circunstancia.
 - **Documentación de Next.js:** Consulta siempre `node_modules/next/dist/docs/` antes de programar componentes o lógica de Next.js para evitar romper convenciones de esta versión.
-- **Diseño UI/UX:** Interfaz limpia, minimalista, estilo rojo minimalista y enfoque *mobile-first* (prioridad en móvil y tablet). Los modulos punto de ventas y panel administrativos tambien deben ir optimizados para móvil, tablet y Pc's.
+- **Diseño UI/UX:** Interfaz limpia, minimalista, estilo rojo minimalista y enfoque *mobile-first* (prioridad en móvil y tablet). El control persistente claro/oscuro es global para catálogo e inventario; todo módulo futuro debe respetar `data-theme` y los tokens de `src/app/globals.css`. Los módulos de ventas y panel administrativo también deben optimizarse para móvil, tablet y PC.
 
 ## 2. Skills de Referencia UI/UX y Diseño Frontend
 Al diseñar o refactorizar interfaces de usuario (componentes React, maquetación mobile-first con Tailwind CSS, tablas de inventario, formularios, catálogos y paneles de navegación), el agente debe consultar y aplicar de forma estricta las directrices de las siguientes skills:

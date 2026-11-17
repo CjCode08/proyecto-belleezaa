@@ -1,8 +1,14 @@
 @import "tailwindcss";
 
 :root {
+  color-scheme: light;
   --background: #ffffff;
   --foreground: #171717;
+  --surface-card: #ffffff;
+  --surface-image: #efeee9;
+  --surface-border: #e8e6e1;
+  --surface-muted-text: #5b5550;
+  --surface-accent: #b50638;
 }
 
 @theme inline {
@@ -12,11 +18,15 @@
   --font-mono: var(--font-geist-mono);
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
+:root[data-theme="dark"] {
   color-scheme: dark;
   --background: #181819;
   --foreground: #f5f2f1;
+  --surface-card: #252526;
+  --surface-image: #323032;
+  --surface-border: #625a5c;
+  --surface-muted-text: #c9c4c3;
+  --surface-accent: #ffabb9;
   --dark-page: #181819;
   --dark-surface: #252526;
   --dark-surface-raised: #323032;
@@ -30,43 +40,85 @@
   --dark-error-text: #ffc0c3;
   --dark-warning-bg: #493a18;
   --dark-warning-text: #ffe09a;
-  }
+}
 
-  :is([class~="bg-rose-50"], [class~="bg-rose-50/30"], [class~="bg-rose-50/40"],
+:root[data-theme="dark"] :is([class~="bg-rose-50"], [class~="bg-rose-50/30"], [class~="bg-rose-50/40"],
     [class~="bg-[#faf9f6]"], [class~="bg-[#fff8f9]"]) { background-color: var(--dark-page); }
-  :is([class~="bg-white"], [class~="bg-white/95"], [class~="bg-[#f5ecee]"],
+:root[data-theme="dark"] :is([class~="bg-white"], [class~="bg-white/95"], [class~="bg-[#f5ecee]"],
     [class~="bg-[#efeee9]"], [class~="bg-[#fbf1f4]"], [class~="bg-rose-50/50"],
     [class~="bg-slate-100"], [class~="bg-rose-100"]) { background-color: var(--dark-surface); }
-  :is([class~="bg-[#e9e0e3]"], [class~="bg-[#ffd9dd]"]) { background-color: var(--dark-surface-raised); }
-  [class~="bg-emerald-100"] { background-color: var(--dark-success-bg); }
-  [class~="bg-red-100"] { background-color: var(--dark-error-bg); }
-  :is([class~="bg-amber-50"], [class~="bg-amber-100"]) { background-color: var(--dark-warning-bg); }
+:root[data-theme="dark"] :is([class~="bg-[#e9e0e3]"], [class~="bg-[#ffd9dd]"]) { background-color: var(--dark-surface-raised); }
+:root[data-theme="dark"] [class~="bg-emerald-100"] { background-color: var(--dark-success-bg); }
+:root[data-theme="dark"] [class~="bg-red-100"] { background-color: var(--dark-error-bg); }
+:root[data-theme="dark"] :is([class~="bg-amber-50"], [class~="bg-amber-100"]) { background-color: var(--dark-warning-bg); }
 
-  :is([class~="text-slate-900"], [class~="text-slate-800"], [class~="text-slate-700"],
+:root[data-theme="dark"] :is([class~="text-slate-900"], [class~="text-slate-800"], [class~="text-slate-700"],
     [class~="text-[#1e1a1c]"]) { color: var(--dark-text); }
-  :is([class~="text-slate-600"], [class~="text-slate-500"], [class~="text-[#514c48]"],
+:root[data-theme="dark"] :is([class~="text-slate-600"], [class~="text-slate-500"], [class~="text-[#514c48]"],
     [class~="text-[#5b4041]"], [class~="text-[#5b5550]"]) { color: var(--dark-muted); }
-  :is([class~="text-rose-500"], [class~="text-rose-600"], [class~="text-rose-700"],
+:root[data-theme="dark"] :is([class~="text-rose-500"], [class~="text-rose-600"], [class~="text-rose-700"],
     [class~="text-rose-800"], [class~="text-[#720429]"], [class~="text-[#92002a]"],
     [class~="text-[#b50638]"]) { color: var(--dark-accent); }
-  :is([class~="text-emerald-600"], [class~="text-emerald-700"], [class~="text-emerald-800"]) { color: var(--dark-success-text); }
-  :is([class~="text-red-500"], [class~="text-red-600"], [class~="text-red-700"], [class~="text-red-800"]) { color: var(--dark-error-text); }
-  :is([class~="text-amber-700"], [class~="text-amber-800"], [class~="text-amber-900"]) { color: var(--dark-warning-text); }
+:root[data-theme="dark"] :is([class~="text-emerald-600"], [class~="text-emerald-700"], [class~="text-emerald-800"]) { color: var(--dark-success-text); }
+:root[data-theme="dark"] :is([class~="text-red-500"], [class~="text-red-600"], [class~="text-red-700"], [class~="text-red-800"]) { color: var(--dark-error-text); }
+:root[data-theme="dark"] :is([class~="text-amber-700"], [class~="text-amber-800"], [class~="text-amber-900"]) { color: var(--dark-warning-text); }
 
-  :is([class~="border-rose-50"], [class~="border-rose-100"], [class~="border-rose-200"],
+:root[data-theme="dark"] :is([class~="border-rose-50"], [class~="border-rose-100"], [class~="border-rose-200"],
     [class~="border-rose-300"], [class~="border-red-100"], [class~="border-red-200"],
     [class~="border-amber-200"], [class~="border-amber-300"], [class~="border-emerald-300"],
     [class~="border-slate-200"], [class~="border-slate-300"], [class~="border-slate-400"],
     [class~="border-[#d6d3cd]"], [class~="border-[#d9c6c8]"], [class~="border-[#e0ded8]"],
     [class~="border-[#e3bebf]"], [class~="border-[#e8e6e1]"], [class~="border-[#efe6e8]"]) { border-color: var(--dark-border); }
-  :is([class~="divide-rose-50"], [class~="divide-rose-100"]) > :not(:last-child) { border-color: var(--dark-border); }
+:root[data-theme="dark"] :is([class~="divide-rose-50"], [class~="divide-rose-100"]) > :not(:last-child) { border-color: var(--dark-border); }
 
-  :is([class~="hover:bg-rose-50"], [class~="hover:bg-rose-100"], [class~="hover:bg-[#fbf1f4]"],
+:root[data-theme="dark"] :is([class~="hover:bg-rose-50"], [class~="hover:bg-rose-100"], [class~="hover:bg-[#fbf1f4]"],
     [class~="hover:bg-[#e9e0e3]"]):hover { background-color: var(--dark-surface-raised); }
-  :is([class~="hover:text-[#92002a]"], [class~="hover:text-[#b50638]"]):hover,
-  [class~="focus-within:text-[#92002a]"]:focus-within { color: var(--dark-accent); }
-  :is(input, textarea)::placeholder { color: #b7b1b0; opacity: 1; }
-  input[type="date"] { color-scheme: dark; }
+:root[data-theme="dark"] :is([class~="hover:text-[#92002a]"], [class~="hover:text-[#b50638]"]):hover,
+:root[data-theme="dark"] [class~="focus-within:text-[#92002a]"]:focus-within { color: var(--dark-accent); }
+:root[data-theme="dark"] :is(input, textarea)::placeholder { color: #b7b1b0; opacity: 1; }
+:root[data-theme="dark"] input[type="date"] { color-scheme: dark; }
+
+.theme-control-bar {
+  background-color: var(--background);
+  border-color: var(--surface-border);
+  color: var(--foreground);
+}
+
+.theme-toggle {
+  border-color: var(--surface-border);
+  background-color: var(--surface-card);
+  color: var(--foreground);
+}
+
+.theme-toggle:hover {
+  border-color: var(--surface-accent);
+  color: var(--surface-accent);
+}
+
+.catalog-product-card {
+  border-color: var(--surface-border);
+  background-color: var(--surface-card);
+  color: var(--foreground);
+  box-shadow: 0 2px 8px rgb(31 27 29 / 5%);
+  transition: transform 180ms ease, border-color 180ms ease, box-shadow 180ms ease;
+}
+
+.catalog-product-card:hover {
+  border-color: var(--surface-accent);
+  transform: translateY(-4px);
+  box-shadow: 0 12px 28px rgb(31 27 29 / 12%);
+}
+
+.catalog-product-image {
+  background-color: var(--surface-image);
+}
+
+.catalog-product-muted { color: var(--surface-muted-text); }
+.catalog-product-accent { color: var(--surface-accent); }
+
+@media (prefers-reduced-motion: reduce) {
+  .catalog-product-card { transition: none; }
+  .catalog-product-card:hover { transform: none; }
 }
 
 body {

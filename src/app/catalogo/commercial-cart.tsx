@@ -1,7 +1,7 @@
 "use client";
 
 import Image from "next/image";
-import { ChevronLeft, ChevronRight, ShoppingBag, X } from "lucide-react";
+import { ArrowUpRight, ChevronLeft, ChevronRight, ShoppingBag, X } from "lucide-react";
 import { createContext, useContext, useEffect, useRef, useState, useSyncExternalStore } from "react";
 import { commercialTotal, parseCommercialCart, removeCommercialCheckedOutItems, type CommercialItem, type CommercialPrice, type CommercialProduct } from "@/lib/catalog/commercial";
 import { convertUsdCentsToVesCents, formatVesCents } from "@/lib/catalog/currency";
@@ -92,12 +92,12 @@ export function ProductDetails({ product, imageUrl, rate }: { product: Commercia
   const request = useRef<AbortController | null>(null);
   const [images, setImages] = useState<string[]>([]);
   const [index, setIndex] = useState(0);
+  const [imagesLoading, setImagesLoading] = useState(false);
   const [error, setError] = useState("");
   const [feedback, setFeedback] = useState("");
   const [feedbackVersion, setFeedbackVersion] = useState<number | null>(null);
   const [selection, setSelection] = useState(product.variants[0]?.id ?? product.bundles[0]?.id ?? "");
-  const cardPrice = product.prices.find((row) => row.payment_category === "divisas" && (row.unit_price_usd !== null || row.bundle_price_usd !== null))
-    ?? product.prices.find((row) => row.unit_price_usd !== null || row.bundle_price_usd !== null);
+  const cardPrice = product.prices.find((row) => row.payment_category === "divisas");
   if (!cart) throw new Error("El carrito no está disponible.");
   useEffect(() => () => request.current?.abort(), []);
   async function open() {
@@ -106,6 +106,7 @@ export function ProductDetails({ product, imageUrl, rate }: { product: Commercia
     const controller = new AbortController();
     request.current = controller;
     setImages([]); setIndex(0); setError(""); setFeedback("");
+    setImagesLoading(true);
     try {
       const response = await fetch(`/catalogo/imagenes/${encodeURIComponent(product.id)}`, { cache: "no-store", signal: controller.signal });
       if (!response.ok) throw new Error("No se pudieron cargar las imágenes.");
@@ -113,6 +114,7 @@ export function ProductDetails({ product, imageUrl, rate }: { product: Commercia
       if (!result || typeof result !== "object" || !("images" in result) || !Array.isArray(result.images) || !result.images.every((url: unknown) => typeof url === "string")) throw new Error("Respuesta inválida.");
       if (!controller.signal.aborted) setImages(result.images);
     } catch { if (!controller.signal.aborted) setError("No se pudieron cargar las imágenes. Cierra y vuelve a intentar."); }
+    finally { if (!controller.signal.aborted) setImagesLoading(false); }
   }
   function add() {
     const kind = product.variants.some((row) => row.id === selection) ? "variant" : "bundle";
@@ -121,18 +123,30 @@ export function ProductDetails({ product, imageUrl, rate }: { product: Commercia
     setFeedbackVersion(added ? cart!.checkoutVersion : null);
   }
   return <>
-    <button type="button" onClick={open} aria-label={`Ver detalles de ${product.name}`} className="block w-full text-left focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#b50638]">
-      <div className="overflow-hidden bg-[#efeee9]">{imageUrl ? <Image src={imageUrl} alt={product.name} width={800} height={1067} unoptimized className="aspect-[3/4] w-full object-cover" /> : <div className="flex aspect-[3/4] items-center justify-center p-4 text-center text-sm text-[#5b5550]">Imagen de catálogo pendiente</div>}</div>
-      <p className="mt-3 text-xs font-semibold uppercase text-[#92002a]">{product.category || "Colección"}</p><h2 className="mt-1 break-words font-[family-name:var(--font-catalog-heading)] text-base font-semibold">{product.name}</h2>
-      {cardPrice && <div className="mt-2 text-sm"><p className="text-xs text-[#5b5550]">Pago en {cardPrice.payment_category === "divisas" ? "divisas" : "bolívares"}</p>{cardPrice.unit_price_usd !== null && <p className="font-semibold">{amount(cardPrice.unit_price_usd, cardPrice.payment_category, rate)} por unidad</p>}{cardPrice.bundle_price_usd !== null && <p className="mt-1 text-[#5b5550]">Bulto cerrado: {amount(cardPrice.bundle_price_usd, cardPrice.payment_category, rate)}</p>}</div>}
-      <span className="mt-2 inline-block text-sm font-semibold text-[#92002a] underline underline-offset-4">Ver detalles</span>
-    </button>
+    <div className="catalog-product-card group overflow-hidden rounded-lg border">
+      <button type="button" onClick={open} aria-haspopup="dialog" aria-label={`Ver información y precios de ${product.name}`} className="block w-full text-left focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#b50638] active:opacity-90">
+        <div className="catalog-product-image aspect-[3/4] overflow-hidden">{imageUrl ? <Image src={imageUrl} alt={product.name} width={800} height={1067} unoptimized className="h-full w-full object-cover transition-transform duration-300 group-hover:scale-[1.03] motion-reduce:transition-none" /> : <div className="catalog-product-muted flex h-full items-center justify-center p-4 text-center text-sm">Imagen de catálogo pendiente</div>}</div>
+        <div className="p-3 sm:p-4">
+          <p className="catalog-product-accent text-xs font-semibold uppercase">{product.category || "Colección"}</p>
+          <h2 className="mt-1 break-words font-[family-name:var(--font-catalog-heading)] text-base font-semibold">{product.name}</h2>
+          <div className="mt-3 border-t border-[#e8e6e1] pt-3 text-sm text-left">
+            <p className="catalog-product-muted text-xs font-semibold uppercase">Precios pagos en divisas</p>
+            <p className="mt-2">Precio unitario: <span className="font-semibold">{amount(cardPrice?.unit_price_usd ?? null, "divisas", rate)}</span></p>
+            <div className="mt-1"><p>Precio promocional: <span className="font-semibold">{amount(cardPrice?.promotion_price_usd ?? null, "divisas", rate)}</span></p>{cardPrice?.promotion_price_usd !== null && cardPrice?.promotion_price_usd !== undefined && <p className="catalog-product-muted mt-1 text-xs">{cardPrice.promotion_quantity ? `Grupos de ${cardPrice.promotion_quantity} unidades` : "Promoción"}{cardPrice.promotion_description ? ` · ${cardPrice.promotion_description}` : ""}</p>}</div>
+            {cardPrice?.bundle_price_usd !== null && cardPrice?.bundle_price_usd !== undefined && <p className="catalog-product-muted mt-1 text-xs">Bulto cerrado: {amount(cardPrice.bundle_price_usd, "divisas", rate)}</p>}
+          </div>
+          <span className="catalog-product-accent mt-3 inline-flex items-center gap-1 text-sm font-semibold">Ver información <ArrowUpRight size={16} aria-hidden="true" /></span>
+        </div>
+      </button>
+    </div>
     <dialog ref={dialog} onClose={() => request.current?.abort()} aria-labelledby={`product-${product.id}`} className="catalog-gallery-dialog fixed inset-0 m-auto max-h-[92dvh] w-[min(96vw,1000px)] max-w-none overflow-y-auto rounded-lg bg-[#faf9f6] p-4 text-[#1e1a1c] shadow-2xl sm:p-6">
       <div className="flex items-start justify-between gap-3"><h2 id={`product-${product.id}`} className="break-words font-[family-name:var(--font-catalog-heading)] text-xl font-semibold">{product.name}</h2><button type="button" aria-label="Cerrar detalles" className={button} onClick={() => dialog.current?.close()}><X size={20} /></button></div>
       <div className="mt-4 grid gap-6 md:grid-cols-2">
-        <div><div className="flex h-[min(55dvh,520px)] items-center justify-center bg-[#efeee9]">{images.length ? <Image src={images[index]} alt={`${product.name}, imagen ${index + 1} de ${images.length}`} width={1000} height={1000} unoptimized className="h-full w-full object-contain" /> : <p className="p-4 text-center text-sm">{error || "Imágenes de catálogo"}</p>}</div>{images.length > 1 && <div className="mt-2 flex items-center justify-center gap-4"><button type="button" aria-label="Imagen anterior" className={button} onClick={() => setIndex((index + images.length - 1) % images.length)}><ChevronLeft size={20} /></button><span aria-live="polite" className="text-sm">{index + 1} / {images.length}</span><button type="button" aria-label="Imagen siguiente" className={button} onClick={() => setIndex((index + 1) % images.length)}><ChevronRight size={20} /></button></div>}</div>
+        <div><div className="flex h-[min(55dvh,520px)] items-center justify-center bg-[#efeee9]">{images.length ? <Image src={images[index]} alt={`${product.name}, imagen ${index + 1} de ${images.length}`} width={1000} height={1000} unoptimized className="h-full w-full object-contain" /> : <p role={imagesLoading ? "status" : undefined} className="p-4 text-center text-sm">{error || (imagesLoading ? "Cargando imágenes…" : "Imágenes de catálogo")}</p>}</div>{images.length > 1 && <div className="mt-2 flex items-center justify-center gap-4"><button type="button" aria-label="Imagen anterior" className={button} onClick={() => setIndex((index + images.length - 1) % images.length)}><ChevronLeft size={20} /></button><span aria-live="polite" className="text-sm">{index + 1} / {images.length}</span><button type="button" aria-label="Imagen siguiente" className={button} onClick={() => setIndex((index + 1) % images.length)}><ChevronRight size={20} /></button></div>}</div>
         <div className="min-w-0"><p className="whitespace-pre-wrap break-words text-sm leading-6 text-[#514c48]">{product.description || "Sin descripción."}</p>
-          {(["divisas", "bolivares"] as const).map((category) => { const price = product.prices.find((row) => row.payment_category === category); return <section key={category} className="mt-5 border-t border-[#e0ded8] pt-4"><h3 className="font-semibold">Pago en {category === "divisas" ? "divisas" : "bolívares"}</h3>{price ? <dl className="mt-2 space-y-1 text-sm"><div className="flex justify-between gap-4"><dt>Precio unitario</dt><dd>{amount(price.unit_price_usd, category, rate)}</dd></div><div className="flex justify-between gap-4"><dt>Promoción por unidad</dt><dd>{amount(price.promotion_price_usd, category, rate)}</dd></div>{price.promotion_price_usd !== null && <div className="text-[#5b5550]">Grupos de {price.promotion_quantity} unidades{price.promotion_description ? ` · ${price.promotion_description}` : ""}</div>}<div className="flex justify-between gap-4"><dt>Bulto cerrado (12 piezas)</dt><dd>{amount(price.bundle_price_usd, category, rate)}</dd></div></dl> : <p className="mt-2 text-sm text-[#5b5550]">Precio no disponible.</p>}</section>; })}
+          <div className="mt-5 border-t border-[#e0ded8] pt-4"><h3 className="text-lg font-semibold">Precios</h3>
+            {(["bolivares", "divisas"] as const).map((category) => { const price = product.prices.find((row) => row.payment_category === category); return <section key={category} aria-label={category === "divisas" ? "Precios pagos en divisas" : "Precios pagos en Bolívares"} className="mt-4 border-t border-[#e0ded8] pt-4"><h4 className="font-semibold">{category === "divisas" ? "Precios pagos en divisas" : "Precios pagos en Bolívares"}</h4>{price ? <dl className="mt-2 space-y-2 text-sm"><div className="flex justify-between gap-4"><dt>Precio unitario</dt><dd>{amount(price.unit_price_usd, category, rate)}</dd></div><div className="flex justify-between gap-4"><dt>Precio promocional</dt><dd>{amount(price.promotion_price_usd, category, rate)}</dd></div>{price.promotion_price_usd !== null && <div className="catalog-product-muted">Grupos de {price.promotion_quantity} unidades{price.promotion_description ? ` · ${price.promotion_description}` : ""}</div>}<div className="flex justify-between gap-4"><dt>Bulto cerrado (12 piezas)</dt><dd>{amount(price.bundle_price_usd, category, rate)}</dd></div></dl> : <p className="catalog-product-muted mt-2 text-sm">Precio no disponible.</p>}</section>; })}
+          </div>
           <label className="mt-5 block text-sm font-semibold">Talla y color o bulto<select className="mt-2 min-h-11 w-full rounded-md border border-[#d6d3cd] bg-white px-3 text-sm" value={selection} onChange={(event) => setSelection(event.target.value)}>{product.variants.map((variant) => <option key={variant.id} value={variant.id}>{variant.size} · {variant.color} — {variant.stock} Unds</option>)}{product.bundles.map((bundle) => <option key={bundle.id} value={bundle.id}>Bulto: {bundle.description} — {bundle.stock} disponibles</option>)}</select></label>
           <button type="button" disabled={!selection} onClick={add} className="mt-3 min-h-11 w-full rounded-md bg-[#b50638] px-4 font-semibold text-white hover:bg-[#92002a] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#b50638] disabled:opacity-50">Añadir al carrito</button><p role="status" className="mt-2 text-sm">{feedbackVersion === null || feedbackVersion === cart.checkoutVersion ? feedback : ""}</p>
         </div>
