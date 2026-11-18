@@ -1,13 +1,13 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { groupVariants, type InventoryVariant, type VariantGroup } from "@/lib/inventory/variant-groups";
 import { normalizeColor, normalizeSize } from "@/lib/inventory/product-fields";
 import { fieldClass } from "./product-fields";
 import { secondaryButtonClass } from "./ui";
 
 function newColor() {
-  return { key: crypto.randomUUID(), color: "", sku: "", stock: "0", colorCode: "", codeEdited: false };
+  return { key: crypto.randomUUID(), color: "", sku: "", stock: "", colorCode: "", codeEdited: false };
 }
 
 export function VariantFields({ initialVariants = [], editing = false, skuBase = "", canDelete = true }: {
@@ -16,35 +16,51 @@ export function VariantFields({ initialVariants = [], editing = false, skuBase =
   skuBase?: string;
   canDelete?: boolean;
 }) {
+  const groupElements = useRef(new Map<string, HTMLFieldSetElement>());
+  const addedGroupKey = useRef<string | null>(null);
   const [groups, setGroups] = useState<VariantGroup[]>(() => {
     const existing = groupVariants(initialVariants);
     if (editing && existing.length === 0) return [];
     return existing.length ? existing : [{
       key: "initial-size",
       size: "",
-      colors: [{ key: "initial-color", color: "", sku: "", stock: "0", colorCode: "", codeEdited: false }],
+      colors: [{ key: "initial-color", color: "", sku: "", stock: "", colorCode: "", codeEdited: false }],
     }];
   });
+
+  useEffect(() => {
+    const key = addedGroupKey.current;
+    if (!key) return;
+    const fieldset = groupElements.current.get(key);
+    fieldset?.scrollIntoView({ behavior: "smooth", block: "center" });
+    fieldset?.querySelector<HTMLInputElement>("input")?.focus({ preventScroll: true });
+    addedGroupKey.current = null;
+  }, [groups]);
 
   function updateGroup(key: string, update: (group: VariantGroup) => VariantGroup) {
     setGroups((current) => current.map((group) => group.key === key ? update(group) : group));
   }
 
+  function addGroup() {
+    const key = crypto.randomUUID();
+    addedGroupKey.current = key;
+    setGroups((current) => [...current, { key, size: "", colors: [newColor()] }]);
+  }
+
   return (
     <section className="space-y-4 rounded-2xl border border-rose-100 bg-white p-5 sm:p-6">
-      <div className="flex flex-wrap items-center justify-between gap-3">
+      <div>
         <div>
           <h2 className="text-lg font-semibold">Tallas y colores</h2>
           <p className="mt-1 text-sm text-slate-500">Añade una talla y registra sus colores, existencias y SKU.</p>
         </div>
-        <button type="button" className={secondaryButtonClass}
-          onClick={() => setGroups((current) => [...current, { key: crypto.randomUUID(), size: "", colors: [newColor()] }])}>
-          + Añadir talla
-        </button>
       </div>
       {groups.length === 0 && <p className="text-sm text-slate-600">Sin variantes sueltas; puedes registrar solo bultos.</p>}
       {groups.map((group, groupIndex) => (
-        <fieldset key={group.key} className="space-y-4 rounded-xl border border-slate-200 p-4">
+        <fieldset key={group.key} ref={(element) => {
+          if (element) groupElements.current.set(group.key, element);
+          else groupElements.current.delete(group.key);
+        }} className="space-y-4 rounded-xl border border-slate-200 p-4">
           <legend className="px-1 text-sm font-medium">Talla {groupIndex + 1}</legend>
           <label className="block text-sm font-medium">Talla
             <input required maxLength={50} value={group.size} className={fieldClass}
@@ -118,6 +134,11 @@ export function VariantFields({ initialVariants = [], editing = false, skuBase =
           </div>
         </fieldset>
       ))}
+      <div className="border-t border-rose-100 pt-4">
+        <button type="button" className={`${secondaryButtonClass} w-full border-dashed sm:w-auto`} onClick={addGroup}>
+          + Añadir talla
+        </button>
+      </div>
     </section>
   );
 }

@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, type WheelEvent } from "react";
 import type { Database } from "@/lib/supabase/types";
 import { fieldClass } from "./product-fields";
 import { secondaryButtonClass } from "./ui";
@@ -8,6 +8,10 @@ import { secondaryButtonClass } from "./ui";
 type Price = Database["public"]["Tables"]["inventory_product_prices"]["Row"];
 type Bundle = Database["public"]["Tables"]["inventory_bundles"]["Row"];
 type BundleField = Partial<Bundle> & { key: string };
+
+function blurPriceOnWheel(event: WheelEvent<HTMLInputElement>) {
+  event.currentTarget.blur();
+}
 
 export function CommercialFields({ prices = [], bundles = [], canDelete = true }: {
   prices?: Price[];
@@ -33,11 +37,11 @@ export function CommercialFields({ prices = [], bundles = [], canDelete = true }
               <legend className="px-1 text-sm font-semibold">Pago en {category === "bolivares" ? "bolívares" : "divisas"}</legend>
               <label className="text-sm font-medium">Precio unitario (USD)
                 <input name={`${category}Unit`} type="number" min="0" max="99999999.99" step="0.01"
-                  defaultValue={current?.unit_price_usd ?? ""} className={fieldClass} />
+                  defaultValue={current?.unit_price_usd ?? ""} onWheel={blurPriceOnWheel} className={fieldClass} />
               </label>
               <label className="text-sm font-medium">Precio promocional por unidad (USD)
                 <input name={`${category}Promotion`} type="number" min="0" max="99999999.99" step="0.01"
-                  defaultValue={current?.promotion_price_usd ?? ""} className={fieldClass} />
+                  defaultValue={current?.promotion_price_usd ?? ""} onWheel={blurPriceOnWheel} className={fieldClass} />
               </label>
               <label className="text-sm font-medium">Unidades por promoción
                 <select name={`${category}PromotionQuantity`} defaultValue={current?.promotion_quantity ?? ""} className={fieldClass}>
@@ -54,7 +58,7 @@ export function CommercialFields({ prices = [], bundles = [], canDelete = true }
               </label>
               <label className="text-sm font-medium">Precio del bulto cerrado de 12 (USD)
                 <input name={`${category}Bundle`} type="number" min="0" max="99999999.99" step="0.01"
-                  defaultValue={current?.bundle_price_usd ?? ""} className={fieldClass} />
+                  defaultValue={current?.bundle_price_usd ?? ""} onWheel={blurPriceOnWheel} className={fieldClass} />
               </label>
             </fieldset>
           );

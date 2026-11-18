@@ -78,12 +78,13 @@ test("el formulario de edición conserva la alineación de tallas y variantes", 
   assert.deepEqual(inputValues(html, "stock"), ["5", "3", "2"]);
 });
 
-test("el formulario nuevo envía una variante inicial sin identificador", () => {
+test("el formulario nuevo inicia las existencias vacías y coloca Añadir talla al final", () => {
   const html = renderFields({});
   assert.deepEqual(inputValues(html, "size"), [""]);
   assert.deepEqual(inputValues(html, "color"), [""]);
-  assert.deepEqual(inputValues(html, "stock"), ["0"]);
+  assert.deepEqual(inputValues(html, "stock"), [""]);
   assert.deepEqual(inputValues(html, "variantId"), []);
   assert.ok(html.indexOf('name="color"') < html.indexOf('name="stock"'));
   assert.ok(html.indexOf('name="stock"') < html.indexOf('name="colorCode"'));
+  assert.ok(html.lastIndexOf("+ Añadir talla") > html.lastIndexOf("</fieldset>"));
 });
