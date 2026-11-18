@@ -1,12 +1,22 @@
 import assert from "node:assert/strict";
 import { test } from "node:test";
-import { commercialTotal, parseCommercialCart, parseCommercialProduct, removeCommercialCheckedOutItems } from "../src/lib/catalog/commercial.ts";
+import { availableCommercialQuantity, canAddCommercialQuantity, commercialTotal, parseCommercialCart, parseCommercialProduct, removeCommercialCheckedOutItems } from "../src/lib/catalog/commercial.ts";
 
 const product = { id: "p", prices: [
   { payment_category: "bolivares", unit_price_usd: 10, promotion_price_usd: 8, promotion_quantity: 3, bundle_price_usd: 80 },
   { payment_category: "divisas", unit_price_usd: 9, promotion_price_usd: 7, promotion_quantity: 2, bundle_price_usd: 70 },
 ] };
 const item = { product, kind: "variant", selectionId: "v", quantity: 4 };
+
+test("limita lo que se agrega al stock restante y al máximo del carrito", () => {
+  assert.equal(availableCommercialQuantity(5, 3), 2);
+  assert.equal(availableCommercialQuantity(1200), 999);
+  assert.equal(canAddCommercialQuantity(2, 5, 3), true);
+  assert.equal(canAddCommercialQuantity(3, 5, 3), false);
+  assert.equal(canAddCommercialQuantity(0, 5), false);
+  assert.equal(canAddCommercialQuantity(1.5, 5), false);
+  assert.equal(canAddCommercialQuantity(1, null), false);
+});
 
 test("agrupa variantes y aplica promociones completas con unidades restantes", () => {
   assert.equal(commercialTotal([item], "bolivares"), 3400);

@@ -7,7 +7,7 @@ import { createSupabaseServerClient } from "@/lib/supabase/server";
 export const instant = false;
 
 export default async function NewProductPage() {
-  await requireInventoryProfile();
+  const profile = await requireInventoryProfile();
   const supabase = await createSupabaseServerClient();
   const { data: categories, error } = await supabase.rpc("inventory_list_categories");
   if (error || !categories) throw new Error("No se pudieron consultar las categorías.", { cause: error });
@@ -17,7 +17,7 @@ export default async function NewProductPage() {
         <Link href="/inventario" className={secondaryButtonClass}>← Volver al inventario</Link>
         <h1 className="mt-4 text-2xl font-semibold">Nuevo producto</h1>
         <p className="mt-1 text-sm text-slate-600">Añade los precios, las variantes y el comentario del movimiento.</p>
-        <ProductForm categories={categories} />
+        <ProductForm categories={categories} canDeleteCategories={profile.role === "admin"} />
       </div>
     </main>
   );

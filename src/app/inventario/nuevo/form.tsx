@@ -10,7 +10,7 @@ import { VariantFields } from "../variant-fields";
 import { CommercialFields } from "../commercial-fields";
 import { restoreProductFormDraft } from "../product-form-draft";
 
-export function ProductForm({ categories, preview = false }: { categories: string[]; preview?: boolean }) {
+export function ProductForm({ categories, preview = false, canDeleteCategories = false }: { categories: string[]; preview?: boolean; canDeleteCategories?: boolean }) {
   const [state, action, pending] = useActionState(createProduct, {});
   const [skuBase, setSkuBase] = useState("");
   const formRef = useRef<HTMLFormElement>(null);
@@ -37,7 +37,7 @@ export function ProductForm({ categories, preview = false }: { categories: strin
           <input name="skuBase" maxLength={100} pattern="[\p{L}\p{M}0-9\-]+" value={skuBase} spellCheck={false}
             onChange={(event) => setSkuBase(event.target.value.toLocaleUpperCase("es"))} className={fieldClass} />
         </label>
-        <CategoryField categories={categories} />
+        <CategoryField categories={categories} canDeleteCategories={canDeleteCategories} />
         <AudienceField required />
         <label className="text-sm font-medium sm:col-span-2">Descripción
           <textarea name="description" maxLength={2000} rows={3} onChange={(event) => { event.currentTarget.value = capitalizeInitial(event.currentTarget.value); }} className={fieldClass} />

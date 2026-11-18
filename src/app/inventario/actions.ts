@@ -182,3 +182,30 @@ export async function deleteProduct(
   revalidatePath("/inventario/auditoria");
   redirect(cleanupFailed || catalogCleanupError ? "/inventario?limpieza=pendiente" : "/inventario?eliminado=1");
 }
+
+export async function deleteInventoryCategory(name: string): Promise<{ error?: string; deleted?: string }> {
+  const profile = await requireInventoryProfile();
+  if (profile.role !== "admin") return { error: "Solo el administrador puede eliminar categorías." };
+  const categoryName = name.trim();
+  if (!categoryName || categoryName.length > 120) return { error: "El nombre de la categoría no es válido." };
+
+  const supabase = await createSupabaseServerClient();
+  const { error } = await supabase.rpc("inventory_delete_category", { p_name: categoryName });
+  if (error) {
+    console.error("Error al eliminar la categoría:", error.code, error.message);
+    return { error: error.code === "23503"
+      ? "No se puede eliminar porque hay productos que usan esta categoría."
+      : error.code === "P0002"
+        ? "La categoría ya fue eliminada. Actualiza la página."
+        : error.code === "42501"
+          ? "Solo el administrador puede eliminar categorías."
+          : "No se pudo eliminar la categoría. Inténtalo nuevamente." };
+  }
+
+  revalidatePath("/inventario");
+  revalidatePath("/inventario/panel");
+  revalidatePath("/inventario/nuevo");
+  revalidatePath("/inventario/[productId]/editar", "page");
+  revalidatePath("/inventario/auditoria");
+  return { deleted: categoryName };
+}

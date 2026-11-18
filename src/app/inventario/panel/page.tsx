@@ -3,7 +3,6 @@ import { getInventoryDashboardData } from "@/lib/inventory/queries";
 import { requireInventoryProfile } from "@/lib/auth/inventory-access";
 import Link from "next/link";
 import { connection } from "next/server";
-import { logout } from "../../login/actions";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
 import { formatExchangeRateDate } from "@/lib/inventory/exchange-rate";
 
@@ -43,17 +42,15 @@ export default async function Home() {
               <Link href="/inventario" className="rounded-xl bg-rose-600 px-4 py-2 text-sm font-semibold text-white hover:bg-rose-700">
                 Ver inventario
               </Link>
+              <Link href="/inventario/auditoria" className="rounded-xl border border-rose-200 px-4 py-2 text-sm font-semibold text-rose-700 hover:bg-rose-50">
+                Ver auditoría
+              </Link>
               {process.env.NODE_ENV === "development" && <Link href="/inventario/vista-previa" className="rounded-xl border border-amber-300 px-4 py-2 text-sm font-semibold text-amber-900 hover:bg-amber-50">
                 Vista previa local
               </Link>}
               {profile.role === "admin" && <Link href="/inventario/tasa" className="rounded-xl border border-rose-200 px-4 py-2 text-sm font-semibold text-rose-700 hover:bg-rose-50">
                 Tasa de cambio
               </Link>}
-              <form action={logout}>
-                <button className="rounded-xl border border-rose-200 px-4 py-2 text-sm font-semibold text-rose-700 hover:bg-rose-50">
-                  Cerrar sesión
-                </button>
-              </form>
             </div>
           </div>
         </section>
@@ -144,9 +141,14 @@ export default async function Home() {
           </article>
 
           <article className="xl:col-span-2 rounded-2xl border border-rose-100 bg-white p-5 shadow-sm">
-            <div className="mb-4 flex items-center justify-between">
+            <div className="mb-4 flex flex-wrap items-center justify-between gap-3">
               <h2 className="text-lg font-semibold">Últimos Movimientos</h2>
-              <span className="rounded-full bg-emerald-100 px-3 py-1 text-xs font-semibold text-emerald-700">Recientes</span>
+              <div className="flex flex-wrap items-center gap-3">
+                <span className="rounded-full bg-emerald-100 px-3 py-1 text-xs font-semibold text-emerald-700">Recientes</span>
+                <Link href="/inventario/auditoria" className="text-sm font-semibold text-rose-700 underline underline-offset-2 hover:text-rose-800">
+                  Ver auditoría
+                </Link>
+              </div>
             </div>
             <div className="space-y-3">
               {data.latestMovements.map((movement) => (

@@ -11,6 +11,15 @@ export type CommercialVariant = { id: string; size: string; color: string; stock
 export type CommercialProduct = { id: string; name: string; description: string | null; category: string | null; variants: CommercialVariant[]; prices: CommercialPrice[]; bundles: CommercialBundle[] };
 export type CommercialItem = { product: CommercialProduct; kind: "variant" | "bundle"; selectionId: string; quantity: number };
 
+export function availableCommercialQuantity(stock: number | null | undefined, currentQuantity = 0): number {
+  if (!Number.isSafeInteger(stock) || stock! < 0 || !Number.isSafeInteger(currentQuantity) || currentQuantity < 0) return 0;
+  return Math.max(0, Math.min(stock!, 999) - currentQuantity);
+}
+
+export function canAddCommercialQuantity(quantity: number, stock: number | null | undefined, currentQuantity = 0): boolean {
+  return Number.isSafeInteger(quantity) && quantity > 0 && quantity <= availableCommercialQuantity(stock, currentQuantity);
+}
+
 export function removeCommercialCheckedOutItems(items: CommercialItem[], checkedOut: { kind: "variant" | "bundle"; id: string; quantity: number }[]): CommercialItem[] {
   return items.filter((item) => !checkedOut.some((row) => row.kind === item.kind && row.id === item.selectionId && row.quantity === item.quantity));
 }

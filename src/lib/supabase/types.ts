@@ -368,6 +368,7 @@ export type Database = {
         Returns: string[];
       };
       inventory_list_categories: { Args: Record<string, never>; Returns: string[] };
+      inventory_delete_category: { Args: { p_name: string }; Returns: undefined };
       inventory_create_product_v3: {
         Args: Database["public"]["Functions"]["inventory_create_product_v2"]["Args"] & { p_audiences: string[] };
         Returns: string;
@@ -412,6 +413,26 @@ export type Database = {
           comment: string | null;
           quantity_change: number | null;
           created_at: string;
+          actor_name: string;
+          product_name: string | null;
+          variant_size: string | null;
+          variant_color: string | null;
+          total_count: number;
+        }[];
+      };
+      inventory_audit_users: {
+        Args: Record<string, never>;
+        Returns: { id: string; full_name: string }[];
+      };
+      inventory_audit_list_filtered: {
+        Args: { p_offset?: number; p_month?: string | null; p_user_id?: string | null };
+        Returns: {
+          id: string;
+          action_type: string;
+          comment: string | null;
+          quantity_change: number | null;
+          created_at: string;
+          actor_id: string;
           actor_name: string;
           product_name: string | null;
           variant_size: string | null;

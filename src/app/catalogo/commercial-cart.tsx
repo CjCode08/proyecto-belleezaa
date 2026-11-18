@@ -3,7 +3,7 @@
 import Image from "next/image";
 import { ArrowUpRight, ChevronLeft, ChevronRight, ShoppingBag, X } from "lucide-react";
 import { createContext, useContext, useEffect, useRef, useState, useSyncExternalStore } from "react";
-import { commercialTotal, parseCommercialCart, removeCommercialCheckedOutItems, type CommercialItem, type CommercialPrice, type CommercialProduct } from "@/lib/catalog/commercial";
+import { availableCommercialQuantity, canAddCommercialQuantity, commercialTotal, parseCommercialCart, removeCommercialCheckedOutItems, type CommercialItem, type CommercialPrice, type CommercialProduct } from "@/lib/catalog/commercial";
 import { convertUsdCentsToVesCents, formatVesCents } from "@/lib/catalog/currency";
 import type { CommercialCheckoutItem, CommercialCheckoutRequest } from "@/lib/catalog/commercial-checkout";
 import { CommercialCheckout } from "./commercial-checkout";
@@ -46,9 +46,9 @@ export function CommercialCart({ children, rate, storageKey = defaultStorageKey,
   function add(item: CommercialItem) {
     const stock = item.kind === "variant" ? item.product.variants.find((row) => row.id === item.selectionId)?.stock : item.product.bundles.find((row) => row.id === item.selectionId)?.stock;
     const current = items.find((row) => row.kind === item.kind && row.selectionId === item.selectionId);
-    if (readError || !stock || (current?.quantity ?? 0) >= Math.min(stock, 999) || !current && items.length >= 100) return false;
+    if (readError || !canAddCommercialQuantity(item.quantity, stock, current?.quantity ?? 0) || !current && items.length >= 100) return false;
     return update(current
-      ? items.map((row) => row.kind === item.kind && row.selectionId === item.selectionId ? { ...row, product: item.product, quantity: row.quantity + 1 } : row.product.id === item.product.id ? { ...row, product: item.product } : row)
+      ? items.map((row) => row.kind === item.kind && row.selectionId === item.selectionId ? { ...row, product: item.product, quantity: row.quantity + item.quantity } : row.product.id === item.product.id ? { ...row, product: item.product } : row)
       : [...items.map((row) => row.product.id === item.product.id ? { ...row, product: item.product } : row), item]);
   }
   function clear(checkedOut: CommercialCheckoutItem[]) {
@@ -70,7 +70,7 @@ export function CommercialCart({ children, rate, storageKey = defaultStorageKey,
       <fieldset className="mt-5"><legend className="text-sm font-semibold">Forma de pago</legend><div className="mt-2 flex gap-2">{(["divisas", "bolivares"] as const).map((value) => <button key={value} type="button" aria-pressed={category === value} onClick={() => setPayment(value === "bolivares" ? "bolivares" : "binance")} className={`${button} ${category === value ? "border-[#b50638] bg-[#b50638] text-white" : "bg-white"}`}>{value === "divisas" ? "Divisas" : "Bolívares"}</button>)}</div></fieldset>
       {items.length === 0 ? <p className="mt-6 text-sm">Aún no has agregado productos.</p> : <ul className="mt-5 divide-y divide-[#e8e6e1]">{items.map((item) => {
         const selected = item.kind === "variant" ? item.product.variants.find((row) => row.id === item.selectionId) : item.product.bundles.find((row) => row.id === item.selectionId);
-        return <li key={`${item.kind}-${item.selectionId}`} className="py-4 text-sm"><p className="font-semibold">{item.product.name}</p><p className="mt-1 text-[#5b5550]">{selected && "size" in selected ? `${selected.size} · ${selected.color}` : selected && "description" in selected ? `Bulto: ${selected.description}` : "Presentación no disponible"}</p><div className="mt-2 flex items-center gap-3"><button type="button" className={button} aria-label={`Reducir cantidad de ${item.product.name}`} onClick={() => item.quantity === 1 ? removeItem(item) : update(items.map((row) => row === item ? { ...row, quantity: row.quantity - 1 } : row))}>−</button><span>{item.quantity}</span><button type="button" className={button} aria-label={`Aumentar cantidad de ${item.product.name}`} disabled={!selected || item.quantity >= Math.min(selected.stock, 999)} onClick={() => add(item)}>+</button><button type="button" className="min-h-11 font-semibold text-[#92002a] hover:underline" onClick={() => removeItem(item)}>Quitar</button></div></li>;
+        return <li key={`${item.kind}-${item.selectionId}`} className="py-4 text-sm"><p className="font-semibold">{item.product.name}</p><p className="mt-1 text-[#5b5550]">{selected && "size" in selected ? `${selected.size} · ${selected.color}` : selected && "description" in selected ? `Bulto: ${selected.description}` : "Presentación no disponible"}</p><div className="mt-2 flex items-center gap-3"><button type="button" className={button} aria-label={`Reducir cantidad de ${item.product.name}`} onClick={() => item.quantity === 1 ? removeItem(item) : update(items.map((row) => row === item ? { ...row, quantity: row.quantity - 1 } : row))}>−</button><span>{item.quantity}</span><button type="button" className={button} aria-label={`Aumentar cantidad de ${item.product.name}`} disabled={!selected || !canAddCommercialQuantity(1, selected.stock, item.quantity)} onClick={() => add({ ...item, quantity: 1 })}>+</button><button type="button" className="min-h-11 font-semibold text-[#92002a] hover:underline" onClick={() => removeItem(item)}>Quitar</button></div></li>;
       })}</ul>}
       {items.length > 0 && <p className="mt-6 border-t border-[#e8e6e1] pt-4 font-semibold">Total estimado: {total === null ? "No disponible para esta forma de pago" : amount(total / 100, category, rate)}</p>}
       <CommercialCheckout items={items} payment={payment} setPayment={setPayment} rateAvailable={!!rate} siteKey={checkoutSiteKey} mode={checkoutMode} cartOpen={cartOpen} clear={clear} />
@@ -97,8 +97,16 @@ export function ProductDetails({ product, imageUrl, rate }: { product: Commercia
   const [feedback, setFeedback] = useState("");
   const [feedbackVersion, setFeedbackVersion] = useState<number | null>(null);
   const [selection, setSelection] = useState(product.variants[0]?.id ?? product.bundles[0]?.id ?? "");
+  const [addQuantity, setAddQuantity] = useState("1");
   const cardPrice = product.prices.find((row) => row.payment_category === "divisas");
   if (!cart) throw new Error("El carrito no está disponible.");
+  const selectionKind = product.variants.some((row) => row.id === selection) ? "variant" : "bundle";
+  const selectedStock = selectionKind === "variant"
+    ? product.variants.find((row) => row.id === selection)?.stock ?? null
+    : product.bundles.find((row) => row.id === selection)?.stock ?? null;
+  const existingQuantity = cart.items.find((row) => row.kind === selectionKind && row.selectionId === selection)?.quantity ?? 0;
+  const availableToAdd = availableCommercialQuantity(selectedStock, existingQuantity);
+  const canAddSelection = canAddCommercialQuantity(Number(addQuantity), selectedStock, existingQuantity);
   useEffect(() => () => request.current?.abort(), []);
   async function open() {
     dialog.current?.showModal();
@@ -117,22 +125,22 @@ export function ProductDetails({ product, imageUrl, rate }: { product: Commercia
     finally { if (!controller.signal.aborted) setImagesLoading(false); }
   }
   function add() {
-    const kind = product.variants.some((row) => row.id === selection) ? "variant" : "bundle";
-    const added = cart!.add({ product, kind, selectionId: selection, quantity: 1 });
+    const added = cart!.add({ product, kind: selectionKind, selectionId: selection, quantity: Number(addQuantity) });
     setFeedback(added ? "Agregado al carrito." : "No se pudo agregar. Revisa las existencias y el almacenamiento del navegador.");
     setFeedbackVersion(added ? cart!.checkoutVersion : null);
+    if (added) setAddQuantity("1");
   }
   return <>
     <div className="catalog-product-card group overflow-hidden rounded-lg border">
       <button type="button" onClick={open} aria-haspopup="dialog" aria-label={`Ver información y precios de ${product.name}`} className="block w-full text-left focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#b50638] active:opacity-90">
-        <div className="catalog-product-image aspect-[3/4] overflow-hidden">{imageUrl ? <Image src={imageUrl} alt={product.name} width={800} height={1067} unoptimized className="h-full w-full object-cover transition-transform duration-300 group-hover:scale-[1.03] motion-reduce:transition-none" /> : <div className="catalog-product-muted flex h-full items-center justify-center p-4 text-center text-sm">Imagen de catálogo pendiente</div>}</div>
+        <div className="catalog-product-image aspect-square overflow-hidden">{imageUrl ? <Image src={imageUrl} alt={product.name} width={800} height={1067} unoptimized className="h-full w-full object-cover transition-transform duration-300 group-hover:scale-[1.03] motion-reduce:transition-none" /> : <div className="catalog-product-muted flex h-full items-center justify-center p-4 text-center text-sm">Imagen de catálogo pendiente</div>}</div>
         <div className="p-3 sm:p-4">
           <p className="catalog-product-accent text-xs font-semibold uppercase">{product.category || "Colección"}</p>
           <h2 className="mt-1 break-words font-[family-name:var(--font-catalog-heading)] text-base font-semibold">{product.name}</h2>
           <div className="mt-3 border-t border-[#e8e6e1] pt-3 text-sm text-left">
             <p className="catalog-product-muted text-xs font-semibold uppercase">Precios pagos en divisas</p>
             <p className="mt-2">Precio unitario: <span className="font-semibold">{amount(cardPrice?.unit_price_usd ?? null, "divisas", rate)}</span></p>
-            <div className="mt-1"><p>Precio promocional: <span className="font-semibold">{amount(cardPrice?.promotion_price_usd ?? null, "divisas", rate)}</span></p>{cardPrice?.promotion_price_usd !== null && cardPrice?.promotion_price_usd !== undefined && <p className="catalog-product-muted mt-1 text-xs">{cardPrice.promotion_quantity ? `Grupos de ${cardPrice.promotion_quantity} unidades` : "Promoción"}{cardPrice.promotion_description ? ` · ${cardPrice.promotion_description}` : ""}</p>}</div>
+            <div className="mt-1"><p>Precio promocional: <span className="font-semibold">{amount(cardPrice?.promotion_price_usd ?? null, "divisas", rate)}</span></p>{cardPrice?.promotion_price_usd !== null && cardPrice?.promotion_price_usd !== undefined && <div className="catalog-product-muted mt-1 text-xs"><p>Precio promocional aplica si llevas {cardPrice.promotion_quantity} unidades</p>{cardPrice.promotion_description && <p className="mt-1">{cardPrice.promotion_description}</p>}</div>}</div>
             {cardPrice?.bundle_price_usd !== null && cardPrice?.bundle_price_usd !== undefined && <p className="catalog-product-muted mt-1 text-xs">Bulto cerrado: {amount(cardPrice.bundle_price_usd, "divisas", rate)}</p>}
           </div>
           <span className="catalog-product-accent mt-3 inline-flex items-center gap-1 text-sm font-semibold">Ver información <ArrowUpRight size={16} aria-hidden="true" /></span>
@@ -145,10 +153,31 @@ export function ProductDetails({ product, imageUrl, rate }: { product: Commercia
         <div><div className="flex h-[min(55dvh,520px)] items-center justify-center bg-[#efeee9]">{images.length ? <Image src={images[index]} alt={`${product.name}, imagen ${index + 1} de ${images.length}`} width={1000} height={1000} unoptimized className="h-full w-full object-contain" /> : <p role={imagesLoading ? "status" : undefined} className="p-4 text-center text-sm">{error || (imagesLoading ? "Cargando imágenes…" : "Imágenes de catálogo")}</p>}</div>{images.length > 1 && <div className="mt-2 flex items-center justify-center gap-4"><button type="button" aria-label="Imagen anterior" className={button} onClick={() => setIndex((index + images.length - 1) % images.length)}><ChevronLeft size={20} /></button><span aria-live="polite" className="text-sm">{index + 1} / {images.length}</span><button type="button" aria-label="Imagen siguiente" className={button} onClick={() => setIndex((index + 1) % images.length)}><ChevronRight size={20} /></button></div>}</div>
         <div className="min-w-0"><p className="whitespace-pre-wrap break-words text-sm leading-6 text-[#514c48]">{product.description || "Sin descripción."}</p>
           <div className="mt-5 border-t border-[#e0ded8] pt-4"><h3 className="text-lg font-semibold">Precios</h3>
-            {(["bolivares", "divisas"] as const).map((category) => { const price = product.prices.find((row) => row.payment_category === category); return <section key={category} aria-label={category === "divisas" ? "Precios pagos en divisas" : "Precios pagos en Bolívares"} className="mt-4 border-t border-[#e0ded8] pt-4"><h4 className="font-semibold">{category === "divisas" ? "Precios pagos en divisas" : "Precios pagos en Bolívares"}</h4>{price ? <dl className="mt-2 space-y-2 text-sm"><div className="flex justify-between gap-4"><dt>Precio unitario</dt><dd>{amount(price.unit_price_usd, category, rate)}</dd></div><div className="flex justify-between gap-4"><dt>Precio promocional</dt><dd>{amount(price.promotion_price_usd, category, rate)}</dd></div>{price.promotion_price_usd !== null && <div className="catalog-product-muted">Grupos de {price.promotion_quantity} unidades{price.promotion_description ? ` · ${price.promotion_description}` : ""}</div>}<div className="flex justify-between gap-4"><dt>Bulto cerrado (12 piezas)</dt><dd>{amount(price.bundle_price_usd, category, rate)}</dd></div></dl> : <p className="catalog-product-muted mt-2 text-sm">Precio no disponible.</p>}</section>; })}
+            {(["bolivares", "divisas"] as const).map((category) => {
+              const price = product.prices.find((row) => row.payment_category === category);
+              const heading = category === "divisas" ? "Precios pagos en divisas" : "Precios pagos en Bolívares";
+              return <section key={category} aria-label={heading} className="mt-4 border-t border-[#e0ded8] pt-4">
+                <h4 className="font-semibold">{heading}</h4>
+                {price ? <dl className="mt-2 space-y-2 text-sm">
+                  <div className="flex justify-between gap-4"><dt>Precio unitario (USD)</dt><dd>{price.unit_price_usd === null ? "No disponible" : money.format(price.unit_price_usd)}</dd></div>
+                  <div className="flex justify-between gap-4"><dt>Precio promocional (USD)</dt><dd>{price.promotion_price_usd === null ? "No disponible" : money.format(price.promotion_price_usd)}</dd></div>
+                  {price.promotion_price_usd !== null && <div className="catalog-product-muted">
+                    <p>Precio promocional aplica si llevas {price.promotion_quantity} unidades</p>
+                    {price.promotion_description && <p className="mt-1">{price.promotion_description}</p>}
+                  </div>}
+                  <div className="flex justify-between gap-4"><dt>Bulto cerrado (12 piezas, USD)</dt><dd>{price.bundle_price_usd === null ? "No disponible" : money.format(price.bundle_price_usd)}</dd></div>
+                </dl> : <p className="catalog-product-muted mt-2 text-sm">Precio no disponible.</p>}
+              </section>;
+            })}
           </div>
-          <label className="mt-5 block text-sm font-semibold">Talla y color o bulto<select className="mt-2 min-h-11 w-full rounded-md border border-[#d6d3cd] bg-white px-3 text-sm" value={selection} onChange={(event) => setSelection(event.target.value)}>{product.variants.map((variant) => <option key={variant.id} value={variant.id}>{variant.size} · {variant.color} — {variant.stock} Unds</option>)}{product.bundles.map((bundle) => <option key={bundle.id} value={bundle.id}>Bulto: {bundle.description} — {bundle.stock} disponibles</option>)}</select></label>
-          <button type="button" disabled={!selection} onClick={add} className="mt-3 min-h-11 w-full rounded-md bg-[#b50638] px-4 font-semibold text-white hover:bg-[#92002a] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#b50638] disabled:opacity-50">Añadir al carrito</button><p role="status" className="mt-2 text-sm">{feedbackVersion === null || feedbackVersion === cart.checkoutVersion ? feedback : ""}</p>
+          <label className="mt-5 block text-sm font-semibold">Talla y color o bulto<select className="mt-2 min-h-11 w-full rounded-md border border-[#d6d3cd] bg-white px-3 text-sm" value={selection} onChange={(event) => { setSelection(event.target.value); setAddQuantity("1"); }}>{product.variants.map((variant) => <option key={variant.id} value={variant.id}>{variant.size} · {variant.color} — {variant.stock} Unds</option>)}{product.bundles.map((bundle) => <option key={bundle.id} value={bundle.id}>Bulto: {bundle.description} — {bundle.stock} disponibles</option>)}</select></label>
+          <label className="mt-3 block text-sm font-semibold">Cantidad a agregar
+            <input type="number" min="1" max={availableToAdd} step="1" inputMode="numeric" value={addQuantity}
+              onChange={(event) => setAddQuantity(event.target.value)} disabled={availableToAdd === 0}
+              className="mt-2 min-h-11 w-full rounded-md border border-[#d6d3cd] bg-white px-3 text-sm font-normal" />
+            <span className="catalog-product-muted mt-1 block text-xs">Disponibles para agregar: {availableToAdd}</span>
+          </label>
+          <button type="button" disabled={!selection || !canAddSelection} onClick={add} className="mt-3 min-h-11 w-full rounded-md bg-[#b50638] px-4 font-semibold text-white hover:bg-[#92002a] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#b50638] disabled:opacity-50">Añadir al carrito</button><p role="status" className="mt-2 text-sm">{feedbackVersion === null || feedbackVersion === cart.checkoutVersion ? feedback : ""}</p>
         </div>
       </div>
     </dialog>

@@ -1,12 +1,12 @@
 import Link from "next/link";
 import type { Metadata } from "next";
 import { connection } from "next/server";
-import { Outfit, Plus_Jakarta_Sans } from "next/font/google";
+import { Camera, MessageCircle } from "lucide-react";
+import { Lobster, Outfit, Plus_Jakarta_Sans } from "next/font/google";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
 import { catalogPageHref, catalogPageSize, validCatalogAudience, validCatalogSearch } from "@/lib/catalog/search";
 import { parseCommercialProduct } from "@/lib/catalog/commercial";
 import { CommercialCart, CommercialCartLink, ProductDetails } from "./commercial-cart";
-import { formatExchangeRateDate } from "@/lib/inventory/exchange-rate";
 import { CatalogFilters } from "./filters";
 
 export const instant = false;
@@ -17,6 +17,15 @@ export const metadata: Metadata = {
 
 const outfit = Outfit({ subsets: ["latin"], variable: "--font-catalog-heading", display: "swap" });
 const jakarta = Plus_Jakarta_Sans({ subsets: ["latin"], variable: "--font-catalog-body", display: "swap" });
+const lobster = Lobster({ weight: "400", subsets: ["latin"], variable: "--font-catalog-brand", display: "swap" });
+const advisors = [
+  { name: "Mairobi", phone: "584128361315" },
+  { name: "Yorgelis", phone: "584124953870" },
+  { name: "Noemi", phone: "584244959960" },
+];
+const storeAddress = "Boutique Chicas Íntimas, 2003, Valencia, Carabobo";
+const storeMapUrl = "https://maps.app.goo.gl/S1K6KRjyCaNy12wM6";
+const storeMapEmbedUrl = `https://www.google.com/maps?q=${encodeURIComponent(storeAddress)}&output=embed`;
 
 export default async function CatalogPage({ searchParams }: { searchParams: Promise<{ buscar?: string; pagina?: string; tipo?: string; categoria?: string }> }) {
   await connection();
@@ -77,12 +86,12 @@ export default async function CatalogPage({ searchParams }: { searchParams: Prom
   ) ? process.env.NEXT_PUBLIC_TURNSTILE_SITE_KEY ?? null : null;
 
   return (
-    <div className={`${outfit.variable} ${jakarta.variable} min-h-screen bg-[#faf9f6] font-[family-name:var(--font-catalog-body)] text-[#1e1a1c]`}>
+    <div className={`${outfit.variable} ${jakarta.variable} ${lobster.variable} min-h-screen bg-[#faf9f6] font-[family-name:var(--font-catalog-body)] text-[#1e1a1c]`}>
       <CommercialCart rate={rate?.rate ?? null} checkoutMode={checkoutMode} checkoutSiteKey={checkoutSiteKey}>
       <a href="#productos" className="sr-only focus:not-sr-only focus:absolute focus:left-4 focus:top-2 focus:z-50 focus:rounded-lg focus:bg-white focus:p-3 focus:text-[#92002a] focus:outline-2">Ir a los productos</a>
-      <header className="border-b border-[#e8e6e1] bg-[#faf9f6]">
+      <header className="sticky top-12 z-40 border-b border-[#e8e6e1] bg-[#faf9f6]">
         <div className="mx-auto flex min-h-16 max-w-7xl items-center justify-between gap-4 px-4 sm:px-6 lg:px-8">
-          <Link href="/catalogo" aria-label="Belleza, catálogo" className="font-[family-name:var(--font-catalog-heading)] text-xl font-bold uppercase tracking-[0.16em] focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-[#b50638]">
+          <Link href="/catalogo" aria-label="Belleezaa, catálogo" className="font-[family-name:var(--font-catalog-brand)] text-2xl focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-[#b50638]">
             Belleezaa<span className="text-[#b50638]">.</span>
           </Link>
           <nav aria-label="Navegación del catálogo" className="hidden items-center gap-8 text-sm font-semibold lg:flex">
@@ -95,7 +104,7 @@ export default async function CatalogPage({ searchParams }: { searchParams: Prom
       <main id="productos" className="mx-auto max-w-7xl scroll-mt-4 px-4 pb-12 sm:px-6 lg:px-8">
         <section className="border-b border-[#efe6e8] pb-6 pt-7 sm:pb-8 sm:pt-10">
           <p className="font-[family-name:var(--font-catalog-heading)] text-xs font-bold uppercase tracking-[0.18em] text-[#b50638]">Belleza · Colección</p>
-          <h1 className="mt-1 font-[family-name:var(--font-catalog-heading)] text-4xl font-bold uppercase tracking-tight sm:text-5xl lg:text-6xl">Catálogo</h1>
+          <h1 className="mt-1 font-[family-name:var(--font-catalog-brand)] text-5xl font-normal sm:text-6xl lg:text-7xl">Catálogo</h1>
           <div aria-hidden="true" className="mt-2 h-1 w-12 bg-[#b50638]" />
           <p className="mt-4 max-w-xl text-sm leading-6 text-[#5b4041]">Descubre las prendas disponibles de nuestra tienda y elige tus favoritas.</p>
         </section>
@@ -103,8 +112,6 @@ export default async function CatalogPage({ searchParams }: { searchParams: Prom
         <p>
           Los productos y promociones son de prueba y no son válidos para pedidos. {checkoutSiteKey ? checkoutMode === "test" ? "Las solicitudes son de prueba, no compras reales." : "El vendedor confirmará precios y disponibilidad." : "Los pedidos todavía no están habilitados."}
         </p>
-        {rate ? <p>Tasa del {formatExchangeRateDate(rate.effective_date)}: 1 USD = {rate.rate.replace(".", ",")} Bs.</p>
-          : <p role="alert" className="font-semibold text-[#92002a]">No hay una tasa de cambio registrada para hoy. Los importes en bolívares y los pedidos no están disponibles.</p>}
         </div>
         <div id="buscar" className="scroll-mt-4">
           <div className="py-5 lg:hidden"><CatalogFilters key={JSON.stringify([search, audience, category])} search={search} audience={audience} category={category} categories={categories} mobile /></div>
@@ -121,7 +128,7 @@ export default async function CatalogPage({ searchParams }: { searchParams: Prom
             {page > 1 ? "No hay productos en esta página." : "No se encontraron productos disponibles."}
           </p>
         ) : (
-          <div className="mt-6 grid grid-cols-2 gap-x-3 gap-y-8 md:grid-cols-3 md:gap-x-6 lg:mt-0 lg:gap-x-5 lg:gap-y-10">
+          <div className="mt-6 grid grid-cols-2 gap-x-3 gap-y-6 md:grid-cols-3 md:gap-x-6 lg:mt-0 lg:gap-x-5 lg:gap-y-8">
             {products.map((product) => {
               const path = primaryImages.get(product.id);
               const imageUrl = path ? urls.get(path) : undefined;
@@ -140,9 +147,42 @@ export default async function CatalogPage({ searchParams }: { searchParams: Prom
       </main>
       </CommercialCart>
       <footer className="bg-[#1e1a1c] px-4 py-8 text-white sm:px-6 lg:px-8">
-        <div className="mx-auto max-w-7xl">
-          <p className="font-[family-name:var(--font-catalog-heading)] text-lg font-bold uppercase tracking-[0.14em]">Belleza<span className="text-[#ffb2b7]">.</span></p>
-          <p className="mt-2 text-sm text-[#e9e0e3]">Prendas para acompañarte cada día.</p>
+        <div className="mx-auto grid max-w-7xl gap-8 sm:grid-cols-2 lg:grid-cols-4">
+          <div>
+            <p className="font-[family-name:var(--font-catalog-brand)] text-3xl">Belleezaa<span className="text-[#ffb2b7]">.</span></p>
+            <p className="mt-2 text-sm text-[#e9e0e3]">Prendas para acompañarte cada día.</p>
+          </div>
+          <section aria-labelledby="catalog-social-title">
+            <h2 id="catalog-social-title" className="text-sm font-semibold">Síguenos</h2>
+            <div className="mt-3 flex flex-col items-start gap-3 text-sm text-[#f8eef1]">
+              <a href="https://www.instagram.com/bo.chicasintimas/" target="_blank" rel="noopener noreferrer" className="inline-flex min-h-11 items-center gap-2 underline decoration-[#8f6f71] underline-offset-4 hover:text-[#ffb2b7]">
+                <Camera size={18} aria-hidden="true" /> Instagram
+              </a>
+              <a href="https://whatsapp.com/channel/0029VakYaoQ4IBhD6xo4vq1u" target="_blank" rel="noopener noreferrer" className="inline-flex min-h-11 items-center gap-2 underline decoration-[#8f6f71] underline-offset-4 hover:text-[#ffb2b7]">
+                <MessageCircle size={18} aria-hidden="true" /> Canal de WhatsApp
+              </a>
+            </div>
+          </section>
+          <section aria-labelledby="catalog-advisors-title">
+            <h2 id="catalog-advisors-title" className="text-sm font-semibold">Atención directa</h2>
+            <div className="mt-3 flex flex-col items-start gap-2">
+              {advisors.map((advisor) => <a key={advisor.name}
+                href={`https://wa.me/${advisor.phone}?text=${encodeURIComponent(`Hola, ${advisor.name} necesito ayuda con mi pedido.`)}`}
+                target="_blank" rel="noopener noreferrer"
+                className="inline-flex min-h-11 items-center gap-2 text-sm text-[#f8eef1] underline decoration-[#8f6f71] underline-offset-4 hover:text-[#ffb2b7]">
+                <MessageCircle size={16} aria-hidden="true" /> Asesora {advisor.name}
+              </a>)}
+            </div>
+          </section>
+          <section aria-labelledby="catalog-location-title">
+            <h2 id="catalog-location-title" className="text-sm font-semibold">Visítanos</h2>
+            <p className="mt-3 text-sm text-[#e9e0e3]">{storeAddress}</p>
+            <a href={storeMapUrl} target="_blank" rel="noopener noreferrer" className="mt-2 inline-flex min-h-11 items-center text-sm font-semibold text-[#ffb2b7] underline underline-offset-4 hover:text-white">
+              Cómo llegar
+            </a>
+            <iframe title="Mapa de Boutique Chicas Íntimas en Valencia" src={storeMapEmbedUrl} loading="lazy"
+              referrerPolicy="no-referrer-when-downgrade" className="mt-3 h-40 w-full rounded-lg border border-[#625a5c] bg-[#252526]" />
+          </section>
         </div>
       </footer>
     </div>

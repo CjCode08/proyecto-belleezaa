@@ -60,7 +60,7 @@ export function ProductEditForm({
           <input name="skuBase" maxLength={100} pattern="[\p{L}\p{M}0-9\-]+" value={skuBase} spellCheck={false}
             onChange={(event) => setSkuBase(event.target.value.toLocaleUpperCase("es"))} className={fieldClass} />
         </label>
-        <CategoryField categories={categories} initial={product.category ?? ""} />
+        <CategoryField categories={categories} initial={product.category ?? ""} canDeleteCategories={canDelete} />
         <AudienceField initial={product.audiences} />
         <label className="text-sm font-medium sm:col-span-2">Descripción
           <textarea name="description" maxLength={2000} rows={3} value={description} onChange={(event) => setDescription(capitalizeInitial(event.target.value))} className={fieldClass} />
