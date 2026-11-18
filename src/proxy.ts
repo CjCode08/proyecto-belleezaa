@@ -29,8 +29,10 @@ export async function proxy(request: NextRequest) {
   if (error && error.name !== "AuthSessionMissingError") {
     console.error("Error al actualizar la sesión:", error);
   }
+  const isCreateProductAction = request.method === "POST" &&
+    request.nextUrl.pathname === "/inventario/nuevo" && request.headers.has("next-action");
   if ((request.nextUrl.pathname === "/" || request.nextUrl.pathname.startsWith("/inventario")) &&
-      !user && (!error || error.name === "AuthSessionMissingError")) {
+      !user && !isCreateProductAction && (!error || error.name === "AuthSessionMissingError")) {
     const redirectResponse = NextResponse.redirect(new URL("/login", request.url));
     response.cookies.getAll().forEach((cookie) => redirectResponse.cookies.set(cookie));
     return redirectResponse;

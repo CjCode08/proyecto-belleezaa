@@ -4,6 +4,7 @@ import { createRequire } from "node:module";
 import { test } from "node:test";
 import { runInNewContext } from "node:vm";
 import * as productFields from "../src/lib/inventory/product-fields.ts";
+import { restoreProductFormDraft } from "../src/app/inventario/product-form-draft.ts";
 
 const require = createRequire(import.meta.url);
 const ts = require("typescript");
@@ -61,6 +62,7 @@ test("la vista previa no conecta la acción de guardado y deshabilita el envío"
     exports: componentExports,
     require(id) {
       if (id === "./actions") return { createProduct: async () => ({}) };
+      if (id === "../product-form-draft") return { restoreProductFormDraft: () => {} };
       if (id === "../ui") return { fileInputClass: "field" };
       if (id === "../product-fields") return {
         fieldClass: "field", AudienceField: () => null, CategoryField: () => null,
@@ -74,6 +76,26 @@ test("la vista previa no conecta la acción de guardado y deshabilita el envío"
   const html = renderToStaticMarkup(React.createElement(componentExports.ProductForm, { categories: [], preview: true }));
   assert.doesNotMatch(html.match(/<form\b[^>]*>/)[0], /\baction=/);
   assert.match(html, /<button[^>]*disabled[^>]*>Guardado deshabilitado en vista previa<\/button>/);
+});
+
+test("restaura los campos no controlados y clasificaciones después de un error al guardar", () => {
+  const name = { tagName: "INPUT", type: "text", name: "name", value: "", disabled: false, readOnly: false };
+  const comment = { tagName: "TEXTAREA", name: "comment", value: "", disabled: false, readOnly: false };
+  const audience = { tagName: "INPUT", type: "checkbox", name: "audiences", value: "mujeres", checked: false, disabled: false, readOnly: false };
+  const controlledSize = { tagName: "INPUT", type: "text", name: "size", value: "M", disabled: false, readOnly: false };
+  const form = { elements: [name, comment, audience, controlledSize] };
+  const draft = new FormData();
+  draft.set("name", "Camisa");
+  draft.set("comment", "Alta de prueba");
+  draft.append("audiences", "mujeres");
+  draft.set("size", "M");
+
+  restoreProductFormDraft(form, draft);
+
+  assert.equal(name.value, "Camisa");
+  assert.equal(comment.value, "Alta de prueba");
+  assert.equal(audience.checked, true);
+  assert.equal(controlledSize.value, "M");
 });
 
 function form() {

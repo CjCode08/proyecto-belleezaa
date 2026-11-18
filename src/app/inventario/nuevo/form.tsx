@@ -1,19 +1,33 @@
 "use client";
 
-import { useActionState, useState } from "react";
+import Link from "next/link";
+import { useActionState, useEffect, useRef, useState, type FormEvent } from "react";
 import { createProduct } from "./actions";
 import { fileInputClass } from "../ui";
 import { AudienceField, CategoryField, fieldClass } from "../product-fields";
 import { capitalizeInitial } from "@/lib/inventory/product-fields";
 import { VariantFields } from "../variant-fields";
 import { CommercialFields } from "../commercial-fields";
+import { restoreProductFormDraft } from "../product-form-draft";
 
 export function ProductForm({ categories, preview = false }: { categories: string[]; preview?: boolean }) {
   const [state, action, pending] = useActionState(createProduct, {});
   const [skuBase, setSkuBase] = useState("");
+  const formRef = useRef<HTMLFormElement>(null);
+  const submittedDraft = useRef<FormData | null>(null);
+
+  useEffect(() => {
+    if (!state.error || !formRef.current || !submittedDraft.current) return;
+    restoreProductFormDraft(formRef.current, submittedDraft.current);
+    submittedDraft.current = null;
+  }, [state]);
+
+  function rememberDraft(event: FormEvent<HTMLFormElement>) {
+    if (!preview) submittedDraft.current = new FormData(event.currentTarget);
+  }
 
   return (
-    <form action={preview ? undefined : action} onSubmit={preview ? (event) => event.preventDefault() : undefined} className="mt-6 space-y-6">
+    <form ref={formRef} action={preview ? undefined : action} onSubmit={preview ? (event) => event.preventDefault() : rememberDraft} className="mt-6 space-y-6">
       <section className="grid gap-5 rounded-2xl border border-rose-100 bg-white p-5 shadow-sm sm:grid-cols-2 sm:p-6">
         <div className="sm:col-span-2"><h2 className="text-lg font-semibold">Datos de la prenda</h2><p className="mt-1 text-sm text-slate-500">Organiza tu producto y define sus precios.</p></div>
         <label className="text-sm font-medium">Nombre del producto
@@ -43,7 +57,7 @@ export function ProductForm({ categories, preview = false }: { categories: strin
       <label className="block rounded-2xl border border-rose-100 bg-white p-5 text-sm font-medium shadow-sm sm:p-6">Comentario para auditoría
         <textarea name="comment" required maxLength={1000} rows={3} onChange={(event) => { event.currentTarget.value = capitalizeInitial(event.currentTarget.value); }} className={fieldClass} />
       </label>
-      {state.error && <p role="alert" className="text-sm text-red-700">{state.error}</p>}
+      {state.error && <div role="alert" className="space-y-2 text-sm text-red-700"><p>{state.error}</p>{state.loginRequired && <Link href="/login" target="_blank" rel="noopener noreferrer" className="inline-block font-semibold underline">Iniciar sesión en otra pestaña</Link>}</div>}
       <button type="submit" disabled={pending || preview} className="rounded-xl bg-rose-600 px-5 py-3 text-sm font-semibold text-white hover:bg-rose-700 disabled:opacity-60">
         {preview ? "Guardado deshabilitado en vista previa" : pending ? "Guardando..." : "Guardar producto"}
       </button>

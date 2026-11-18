@@ -120,3 +120,26 @@ test("el proxy mantiene la protección y cookies de inventario", async () => {
   assert.equal(allowed.headers.get("x-middleware-next"), "1");
   assert.equal(allowed.cookies.get("session-test").value, "refreshed");
 });
+
+test("el POST de creación sin sesión llega a la acción para conservar el borrador", async () => {
+  const { proxy, authCalls } = proxyWithSession();
+  const response = await proxy(new NextRequest("https://inventario.belleezaa.com/inventario/nuevo", {
+    method: "POST",
+    headers: { host: "inventario.belleezaa.com", "next-action": "action-id" },
+  }));
+
+  assert.equal(response.headers.get("x-middleware-next"), "1");
+  assert.equal(response.headers.get("location"), null);
+  assert.equal(response.cookies.get("session-test").value, "refreshed");
+  assert.equal(authCalls(), 1);
+});
+
+test("otros POST de inventario siguen redirigiendo al login si falta sesión", async () => {
+  const { proxy } = proxyWithSession();
+  const response = await proxy(new NextRequest("https://inventario.belleezaa.com/inventario", {
+    method: "POST",
+    headers: { host: "inventario.belleezaa.com", "next-action": "action-id" },
+  }));
+
+  assert.equal(new URL(response.headers.get("location")).pathname, "/login");
+});
