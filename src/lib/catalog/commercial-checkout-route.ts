@@ -3,6 +3,7 @@ import { createClient } from "@supabase/supabase-js";
 import { processCommercialCheckout } from "./commercial-checkout-service";
 import type { SavedCommercialCheckout } from "./commercial-checkout";
 import { verifyTurnstile } from "./turnstile";
+import { isCheckoutTestEnabled } from "./checkout-origin";
 
 class RejectedRequest extends Error {}
 function response(body: object, status: number, retryAfter?: number) {
@@ -58,17 +59,32 @@ async function readJson(request: Request): Promise<unknown> {
 
 export async function commercialCheckoutRoute(request: Request, mode: "test" | "production") {
   const isTest = mode === "test";
-  if (isTest ? process.env.NODE_ENV !== "development" || process.env.CHECKOUT_TEST_ENABLED !== "true"
-    : process.env.NODE_ENV !== "production" || process.env.CHECKOUT_PRODUCTION_ENABLED !== "true" || process.env.CATALOG_MAINTENANCE !== "false") {
+  const isDeployPreviewTest = isTest && process.env.NODE_ENV === "production";
+  const localTestOrigin = process.env.CHECKOUT_TEST_ORIGIN ?? (process.env.NODE_ENV === "development" ? "http://localhost:3000" : undefined);
+  const origin = isTest ? localTestOrigin : process.env.CHECKOUT_PRODUCTION_ORIGIN;
+  const testEnabled = isTest && isCheckoutTestEnabled(origin ?? "", process.env.NODE_ENV ?? "", {
+    enabled: process.env.CHECKOUT_TEST_ENABLED,
+    configuredOrigin: localTestOrigin,
+    publicSupabaseUrl: process.env.NEXT_PUBLIC_SUPABASE_URL,
+    testSupabaseUrl: isDeployPreviewTest ? process.env.CHECKOUT_TEST_SUPABASE_URL : process.env.NEXT_PUBLIC_SUPABASE_URL,
+    testServiceRoleKey: isDeployPreviewTest ? process.env.CHECKOUT_TEST_SERVICE_ROLE_KEY : process.env.SUPABASE_SERVICE_ROLE_KEY,
+    testTurnstileSecret: isDeployPreviewTest ? process.env.CHECKOUT_TEST_TURNSTILE_SECRET_KEY : process.env.TURNSTILE_SECRET_KEY,
+    testTurnstileSiteKey: process.env.NEXT_PUBLIC_TURNSTILE_SITE_KEY,
+    testWhatsappNumber: isDeployPreviewTest ? process.env.CHECKOUT_TEST_WHATSAPP_NUMBER : process.env.WHATSAPP_NUMBER,
+  });
+  const productionEnabled = !isTest && process.env.NODE_ENV === "production" &&
+    process.env.CHECKOUT_PRODUCTION_ENABLED === "true" && process.env.CATALOG_MAINTENANCE === "false";
+  if (isTest ? !testEnabled : !productionEnabled) {
     return response({ error: "El checkout no está habilitado." }, 503);
   }
-  const origin = isTest ? process.env.CHECKOUT_TEST_ORIGIN ?? "http://localhost:3000" : process.env.CHECKOUT_PRODUCTION_ORIGIN;
-  if (!origin || !(isTest ? /^http:\/\/localhost(?::[0-9]{1,5})?$/.test(origin) : /^https:\/\/www\.belleezaa\.com$/.test(origin))
-    || request.headers.get("origin") !== origin || !request.headers.get("content-type")?.toLowerCase().startsWith("application/json")) return response({ error: "Solicitud no permitida." }, 403);
-  const url = process.env.NEXT_PUBLIC_SUPABASE_URL;
-  const secret = process.env.SUPABASE_SERVICE_ROLE_KEY;
-  const turnstileSecret = process.env.TURNSTILE_SECRET_KEY;
-  const phone = process.env.WHATSAPP_NUMBER;
+  let requestOrigin: string;
+  try { requestOrigin = new URL(request.url).origin; } catch { return response({ error: "Solicitud no permitida." }, 403); }
+  if (!origin || request.headers.get("origin") !== origin || requestOrigin !== origin
+    || !request.headers.get("content-type")?.toLowerCase().startsWith("application/json")) return response({ error: "Solicitud no permitida." }, 403);
+  const url = isDeployPreviewTest ? process.env.CHECKOUT_TEST_SUPABASE_URL : process.env.NEXT_PUBLIC_SUPABASE_URL;
+  const secret = isDeployPreviewTest ? process.env.CHECKOUT_TEST_SERVICE_ROLE_KEY : process.env.SUPABASE_SERVICE_ROLE_KEY;
+  const turnstileSecret = isDeployPreviewTest ? process.env.CHECKOUT_TEST_TURNSTILE_SECRET_KEY : process.env.TURNSTILE_SECRET_KEY;
+  const phone = isDeployPreviewTest ? process.env.CHECKOUT_TEST_WHATSAPP_NUMBER : process.env.WHATSAPP_NUMBER;
   if (!url || !secret || !turnstileSecret || !phone) return response({ error: "El checkout no está configurado." }, 503);
   const supabase = createClient(url, secret, { auth: { persistSession: false, autoRefreshToken: false } });
   try {

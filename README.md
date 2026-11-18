@@ -2,7 +2,7 @@ This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-
 
 ## Preparación del checkout para Netlify
 
-El catálogo comercial se activa al desplegar en producción. Para ponerlo en mantenimiento, configurar `CATALOG_MAINTENANCE=true` en Netlify. Los productos y promociones actuales son datos de prueba y no son válidos para pedidos; conservarlos sin cambios hasta su validación. El usuario confirmó que la tasa del 17/11/2026 ya está cargada. El checkout real sigue apagado salvo configuración explícita y validación integral de Turnstile, límites y reintentos. El inventario conserva su acceso habitual.
+El catálogo comercial se activa al desplegar en producción. Para ponerlo en mantenimiento, configurar `CATALOG_MAINTENANCE=true` en Netlify. El usuario confirmó que los productos, precios y promociones fueron evaluados y aprobados, y que la tasa del 17/11/2026 ya está cargada. El checkout real requiere configurar en Production las credenciales de Turnstile, Supabase service role y WhatsApp, además de habilitar explícitamente la ruta. El inventario conserva su acceso habitual.
 
 La vista `/inventario/vista-previa/catalogo` está disponible solo en desarrollo y requiere sesión de inventario. Usa productos reales visibles, precios revisados y un carrito separado; no guarda pedidos. La galería de bultos sin variantes depende de la nueva migración pública.
 
@@ -13,7 +13,7 @@ Migraciones comerciales ejecutadas por el usuario en Supabase y probadas previam
 
 No volver a ejecutar estas migraciones. No ejecutar el SQL antiguo `20261111150000_checkout_production_requests.sql`: utiliza reglas de precios anteriores.
 
-El catálogo en Netlify requiere `NEXT_PUBLIC_SUPABASE_URL` y `NEXT_PUBLIC_SUPABASE_ANON_KEY`. El checkout comercial de prueba requiere `CHECKOUT_TEST_ENABLED=true`, `CHECKOUT_TEST_ORIGIN` con el origen exacto de localhost, las claves locales de Supabase y Turnstile y `WHATSAPP_NUMBER`; no habilitarlo en producción. La ruta real permanece apagada salvo configuración explícita de `CHECKOUT_PRODUCTION_ENABLED=true`, `CHECKOUT_PRODUCTION_ORIGIN=https://www.belleezaa.com` y `CATALOG_MAINTENANCE=false`; antes deben verificarse Turnstile, el límite de Netlify y los reintentos en el despliegue. Nunca pegar claves secretas en el chat ni subirlas a Git.
+El catálogo en Netlify requiere `NEXT_PUBLIC_SUPABASE_URL` y `NEXT_PUBLIC_SUPABASE_ANON_KEY`. El checkout test funciona en desarrollo y en Netlify Deploy Preview, nunca en el dominio público: configura `CHECKOUT_TEST_ENABLED=true` y `CHECKOUT_TEST_ORIGIN` con el origen exacto `https://deploy-preview-<número>--<sitio>.netlify.app` solo en el contexto Deploy Preview. Ese contexto debe tener un Supabase de pruebas y sus propias `CHECKOUT_TEST_SUPABASE_URL`, `CHECKOUT_TEST_SERVICE_ROLE_KEY`, `CHECKOUT_TEST_TURNSTILE_SECRET_KEY` y `CHECKOUT_TEST_WHATSAPP_NUMBER`; el URL de prueba debe coincidir con `NEXT_PUBLIC_SUPABASE_URL`, y Turnstile debe permitir el host del preview. Sus registros se marcan como prueba y no descuentan stock; WhatsApp solo se abre, no se envía automáticamente. Mantén `CHECKOUT_PRODUCTION_ENABLED` sin configurar: la ruta de pedidos reales permanece apagada hasta validar productos, precios, Turnstile, límites y reintentos. Nunca pegar claves secretas en el chat ni subirlas a Git.
 
 ## Transición del inventario comercial
 

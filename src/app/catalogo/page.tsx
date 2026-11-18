@@ -1,11 +1,13 @@
 import Link from "next/link";
 import type { Metadata } from "next";
 import { connection } from "next/server";
+import { headers } from "next/headers";
 import { Camera, MessageCircle } from "lucide-react";
 import { Lobster, Outfit, Plus_Jakarta_Sans } from "next/font/google";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
 import { catalogPageHref, catalogPageSize, validCatalogAudience, validCatalogSearch } from "@/lib/catalog/search";
 import { parseCommercialProduct } from "@/lib/catalog/commercial";
+import { isCheckoutTestEnabled } from "@/lib/catalog/checkout-origin";
 import { CommercialCart, CommercialCartLink, ProductDetails } from "./commercial-cart";
 import { CatalogFilters } from "./filters";
 
@@ -29,6 +31,21 @@ const storeMapEmbedUrl = `https://www.google.com/maps?q=${encodeURIComponent(sto
 
 export default async function CatalogPage({ searchParams }: { searchParams: Promise<{ buscar?: string; pagina?: string; tipo?: string; categoria?: string }> }) {
   await connection();
+  const requestHeaders = await headers();
+  const requestHost = requestHeaders.get("host")?.split(",")[0].trim();
+  const currentOrigin = requestHost ? `${process.env.NODE_ENV === "development" ? "http" : "https"}://${requestHost}` : "";
+  const configuredTestOrigin = process.env.CHECKOUT_TEST_ORIGIN ?? (process.env.NODE_ENV === "development" ? "http://localhost:3000" : "");
+  const isDeployPreviewTest = process.env.NODE_ENV === "production";
+  const testCheckoutEnabled = process.env.CHECKOUT_TEST_ENABLED === "true" && isCheckoutTestEnabled(currentOrigin, process.env.NODE_ENV ?? "", {
+    enabled: process.env.CHECKOUT_TEST_ENABLED,
+    configuredOrigin: configuredTestOrigin,
+    publicSupabaseUrl: process.env.NEXT_PUBLIC_SUPABASE_URL,
+    testSupabaseUrl: isDeployPreviewTest ? process.env.CHECKOUT_TEST_SUPABASE_URL : process.env.NEXT_PUBLIC_SUPABASE_URL,
+    testServiceRoleKey: isDeployPreviewTest ? process.env.CHECKOUT_TEST_SERVICE_ROLE_KEY : process.env.SUPABASE_SERVICE_ROLE_KEY,
+    testTurnstileSecret: isDeployPreviewTest ? process.env.CHECKOUT_TEST_TURNSTILE_SECRET_KEY : process.env.TURNSTILE_SECRET_KEY,
+    testTurnstileSiteKey: process.env.NEXT_PUBLIC_TURNSTILE_SITE_KEY,
+    testWhatsappNumber: isDeployPreviewTest ? process.env.CHECKOUT_TEST_WHATSAPP_NUMBER : process.env.WHATSAPP_NUMBER,
+  });
   if (process.env.NODE_ENV === "production" && process.env.CATALOG_MAINTENANCE === "true") {
     return (
       <main className="flex min-h-screen items-center justify-center bg-[#faf9f6] px-5 py-12 text-[#1e1a1c]">
@@ -79,9 +96,9 @@ export default async function CatalogPage({ searchParams }: { searchParams: Prom
     throw new Error("No se pudieron preparar las imágenes del catálogo.", { cause: signedError });
   }
   const urls = new Map(signedImages.map((image) => [image.path!, image.signedUrl!]));
-  const checkoutMode = process.env.NODE_ENV === "development" ? "test" : "production";
+  const checkoutMode = process.env.NODE_ENV === "development" || testCheckoutEnabled ? "test" : "production";
   const checkoutSiteKey = (
-    (checkoutMode === "test" && process.env.CHECKOUT_TEST_ENABLED === "true") ||
+    testCheckoutEnabled ||
     (checkoutMode === "production" && process.env.CHECKOUT_PRODUCTION_ENABLED === "true" && process.env.CHECKOUT_PRODUCTION_ORIGIN === "https://www.belleezaa.com" && process.env.CATALOG_MAINTENANCE === "false")
   ) ? process.env.NEXT_PUBLIC_TURNSTILE_SITE_KEY ?? null : null;
 
@@ -110,7 +127,7 @@ export default async function CatalogPage({ searchParams }: { searchParams: Prom
         </section>
         <div className="mt-5 flex flex-wrap items-center justify-between gap-2 text-xs leading-5 text-[#5b4041]">
         <p>
-          Los productos y promociones son de prueba y no son válidos para pedidos. {checkoutSiteKey ? checkoutMode === "test" ? "Las solicitudes son de prueba, no compras reales." : "El vendedor confirmará precios y disponibilidad." : "Los pedidos todavía no están habilitados."}
+          {checkoutSiteKey ? checkoutMode === "test" ? "Solicitud de prueba: no es una compra real." : "El vendedor confirmará precios y disponibilidad." : "Los pedidos no están habilitados en este momento."}
         </p>
         </div>
         <div id="buscar" className="scroll-mt-4">
