@@ -33,8 +33,10 @@ export function ExchangeRateForm({ record }: { record?: RateRecord }) {
       <div>
         <label htmlFor={`${id}-amount`} className="block text-sm font-medium">Tasa (bolívares por 1 USD)</label>
         <input id={`${id}-amount`} name="rate" type="text" inputMode="decimal" maxLength={17}
-          required value={rate} onChange={(event) => setRate(event.target.value)} aria-describedby={`${id}-amount-help`} className={fieldClass} />
-        <p id={`${id}-amount-help`} className="mt-1 text-xs text-slate-500">Hasta 6 decimales; usa coma o punto decimal.</p>
+          pattern="(?:0|[1-9][0-9]{0,9})(,[0-9]{1,6})?" required value={rate}
+          onChange={(event) => { if (!event.target.value.includes(".")) setRate(event.target.value); }}
+          aria-describedby={`${id}-amount-help`} className={fieldClass} />
+        <p id={`${id}-amount-help`} className="mt-1 text-xs text-slate-500">Hasta 6 decimales; usa coma para los decimales.</p>
       </div>
       <div>
         <label htmlFor={`${id}-comment`} className="block text-sm font-medium">Comentario</label>

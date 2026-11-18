@@ -20,6 +20,14 @@ export function canAddCommercialQuantity(quantity: number, stock: number | null 
   return Number.isSafeInteger(quantity) && quantity > 0 && quantity <= availableCommercialQuantity(stock, currentQuantity);
 }
 
+export function applicablePromotionUnits(items: CommercialItem[], productId: string, category: CommercialPrice["payment_category"]): number {
+  const productItems = items.filter((item) => item.product.id === productId && item.kind === "variant");
+  const price = productItems[0]?.product.prices.find((row) => row.payment_category === category);
+  if (!price?.promotion_quantity || price.promotion_price_usd === null) return 0;
+  const quantity = productItems.reduce((sum, item) => sum + item.quantity, 0);
+  return Math.floor(quantity / price.promotion_quantity) * price.promotion_quantity;
+}
+
 export function removeCommercialCheckedOutItems(items: CommercialItem[], checkedOut: { kind: "variant" | "bundle"; id: string; quantity: number }[]): CommercialItem[] {
   return items.filter((item) => !checkedOut.some((row) => row.kind === item.kind && row.id === item.selectionId && row.quantity === item.quantity));
 }

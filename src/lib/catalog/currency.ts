@@ -1,8 +1,8 @@
-import { parseExchangeRate } from "../inventory/exchange-rate.ts";
+import { parseStoredExchangeRate } from "../inventory/exchange-rate.ts";
 
 export function convertUsdCentsToVesCents(usdCents: number, rate: string): bigint {
   if (!Number.isSafeInteger(usdCents) || usdCents < 0) throw new RangeError("El importe en dólares no es válido.");
-  const parsed = parseExchangeRate(rate);
+  const parsed = parseStoredExchangeRate(rate);
   if (parsed === null) throw new RangeError("La tasa de cambio no es válida.");
   const [whole, fraction = ""] = parsed.split(".");
   const scale = BigInt(1000000);

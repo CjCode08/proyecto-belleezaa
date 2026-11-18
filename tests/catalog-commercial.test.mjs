@@ -1,6 +1,6 @@
 import assert from "node:assert/strict";
 import { test } from "node:test";
-import { availableCommercialQuantity, canAddCommercialQuantity, commercialTotal, parseCommercialCart, parseCommercialProduct, removeCommercialCheckedOutItems } from "../src/lib/catalog/commercial.ts";
+import { applicablePromotionUnits, availableCommercialQuantity, canAddCommercialQuantity, commercialTotal, parseCommercialCart, parseCommercialProduct, removeCommercialCheckedOutItems } from "../src/lib/catalog/commercial.ts";
 
 const product = { id: "p", prices: [
   { payment_category: "bolivares", unit_price_usd: 10, promotion_price_usd: 8, promotion_quantity: 3, bundle_price_usd: 80 },
@@ -16,6 +16,14 @@ test("limita lo que se agrega al stock restante y al máximo del carrito", () =>
   assert.equal(canAddCommercialQuantity(0, 5), false);
   assert.equal(canAddCommercialQuantity(1.5, 5), false);
   assert.equal(canAddCommercialQuantity(1, null), false);
+});
+
+test("determina las unidades promocionales por producto y forma de pago, sin contar bultos", () => {
+  const otherVariant = { ...item, selectionId: "v2", quantity: 3 };
+  const bundle = { ...item, kind: "bundle", selectionId: "b", quantity: 2 };
+  assert.equal(applicablePromotionUnits([item, otherVariant, bundle], "p", "bolivares"), 6);
+  assert.equal(applicablePromotionUnits([item, otherVariant], "p", "divisas"), 6);
+  assert.equal(applicablePromotionUnits([item], "otro-producto", "divisas"), 0);
 });
 
 test("agrupa variantes y aplica promociones completas con unidades restantes", () => {

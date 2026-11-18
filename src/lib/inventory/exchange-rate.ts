@@ -1,5 +1,14 @@
 export function parseExchangeRate(value: string): string | null {
-  const raw = value.trim().replace(",", ".");
+  const input = value.trim();
+  if (input.includes(".")) return null;
+  return parseNormalizedExchangeRate(input.replace(",", "."));
+}
+
+export function parseStoredExchangeRate(value: string): string | null {
+  return parseNormalizedExchangeRate(value.trim());
+}
+
+function parseNormalizedExchangeRate(raw: string): string | null {
   if (!/^(?:0|[1-9]\d{0,9})(?:\.\d{1,6})?$/.test(raw)) return null;
   return /[1-9]/.test(raw) ? raw : null;
 }

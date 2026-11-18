@@ -3,7 +3,7 @@
 import Image from "next/image";
 import { ArrowUpRight, ChevronLeft, ChevronRight, ShoppingBag, X } from "lucide-react";
 import { createContext, useContext, useEffect, useRef, useState, useSyncExternalStore } from "react";
-import { availableCommercialQuantity, canAddCommercialQuantity, commercialTotal, parseCommercialCart, removeCommercialCheckedOutItems, type CommercialItem, type CommercialPrice, type CommercialProduct } from "@/lib/catalog/commercial";
+import { applicablePromotionUnits, availableCommercialQuantity, canAddCommercialQuantity, commercialTotal, parseCommercialCart, removeCommercialCheckedOutItems, type CommercialItem, type CommercialPrice, type CommercialProduct } from "@/lib/catalog/commercial";
 import { convertUsdCentsToVesCents, formatVesCents } from "@/lib/catalog/currency";
 import type { CommercialCheckoutItem, CommercialCheckoutRequest } from "@/lib/catalog/commercial-checkout";
 import { CommercialCheckout } from "./commercial-checkout";
@@ -21,10 +21,12 @@ function subscribe(callback: () => void) {
 type Context = { items: CommercialItem[]; add: (item: CommercialItem) => boolean; open: () => void; checkoutVersion: number };
 const CartContext = createContext<Context | null>(null);
 
-function amount(value: number | null, category: CommercialPrice["payment_category"], rate: string | null) {
+function amount(value: number | null, category: CommercialPrice["payment_category"], rate: string | null): React.ReactNode {
   if (value === null) return "No disponible";
-  if (category === "bolivares") return rate ? formatVesCents(convertUsdCentsToVesCents(Math.round(value * 100), rate)) : "Tasa de hoy no disponible";
-  return money.format(value);
+  return <span className="inline-block text-right align-top">
+    <span className="block">{money.format(value)}</span>
+    {category === "bolivares" && <span className="catalog-product-muted block text-xs font-normal">{rate ? formatVesCents(convertUsdCentsToVesCents(Math.round(value * 100), rate)) : "Tasa de hoy no disponible"}</span>}
+  </span>;
 }
 
 export function CommercialCart({ children, rate, storageKey = defaultStorageKey, checkoutSiteKey = null, checkoutMode = "test" }: { children: React.ReactNode; rate: string | null; storageKey?: string; checkoutSiteKey?: string | null; checkoutMode?: "test" | "production" }) {
@@ -68,9 +70,23 @@ export function CommercialCart({ children, rate, storageKey = defaultStorageKey,
       {(readError || writeError) && <p role="alert" className="mt-3 text-sm text-red-700">{readError || writeError}</p>}
       {readError && raw !== "unavailable" && <button type="button" className="mt-2 min-h-11 text-sm font-semibold text-[#92002a]" onClick={() => update([])}>Vaciar carrito guardado</button>}
       <fieldset className="mt-5"><legend className="text-sm font-semibold">Forma de pago</legend><div className="mt-2 flex gap-2">{(["divisas", "bolivares"] as const).map((value) => <button key={value} type="button" aria-pressed={category === value} onClick={() => setPayment(value === "bolivares" ? "bolivares" : "binance")} className={`${button} ${category === value ? "border-[#b50638] bg-[#b50638] text-white" : "bg-white"}`}>{value === "divisas" ? "Divisas" : "Bolívares"}</button>)}</div></fieldset>
-      {items.length === 0 ? <p className="mt-6 text-sm">Aún no has agregado productos.</p> : <ul className="mt-5 divide-y divide-[#e8e6e1]">{items.map((item) => {
+      {items.length === 0 ? <p className="mt-6 text-sm">Aún no has agregado productos.</p> : <ul className="mt-5 divide-y divide-[#e8e6e1]">{items.map((item, index) => {
         const selected = item.kind === "variant" ? item.product.variants.find((row) => row.id === item.selectionId) : item.product.bundles.find((row) => row.id === item.selectionId);
-        return <li key={`${item.kind}-${item.selectionId}`} className="py-4 text-sm"><p className="font-semibold">{item.product.name}</p><p className="mt-1 text-[#5b5550]">{selected && "size" in selected ? `${selected.size} · ${selected.color}` : selected && "description" in selected ? `Bulto: ${selected.description}` : "Presentación no disponible"}</p><div className="mt-2 flex items-center gap-3"><button type="button" className={button} aria-label={`Reducir cantidad de ${item.product.name}`} onClick={() => item.quantity === 1 ? removeItem(item) : update(items.map((row) => row === item ? { ...row, quantity: row.quantity - 1 } : row))}>−</button><span>{item.quantity}</span><button type="button" className={button} aria-label={`Aumentar cantidad de ${item.product.name}`} disabled={!selected || !canAddCommercialQuantity(1, selected.stock, item.quantity)} onClick={() => add({ ...item, quantity: 1 })}>+</button><button type="button" className="min-h-11 font-semibold text-[#92002a] hover:underline" onClick={() => removeItem(item)}>Quitar</button></div></li>;
+        const price = item.product.prices.find((row) => row.payment_category === category);
+        const itemPrice = item.kind === "variant" ? price?.unit_price_usd ?? null : price?.bundle_price_usd ?? null;
+        const promotionUnits = item.kind === "variant" ? applicablePromotionUnits(items, item.product.id, category) : 0;
+        const firstProductVariant = item.kind === "variant" && items.findIndex((row) => row.kind === "variant" && row.product.id === item.product.id) === index;
+        return <li key={`${item.kind}-${item.selectionId}`} className="py-4 text-sm">
+          <p className="font-semibold">{item.product.name}</p>
+          <p className="mt-1 text-[#5b5550]">{selected && "size" in selected ? `${selected.size} · ${selected.color}` : selected && "description" in selected ? `Bulto: ${selected.description}` : "Presentación no disponible"}</p>
+          <p className="mt-2 flex items-start justify-between gap-3"><span>{item.kind === "bundle" ? "Precio del bulto" : "Precio unitario"}</span>{amount(itemPrice, category, rate)}</p>
+          {firstProductVariant && promotionUnits > 0 && price?.promotion_price_usd !== null && price?.promotion_price_usd !== undefined && <div className="mt-2 rounded-md bg-[#fbf1f4] p-2 text-sm">
+            <p className="font-semibold text-[#92002a]">Precio promocional aplicado ({category === "bolivares" ? "Bolívares" : "Divisas"}) para {promotionUnits} unidades</p>
+            <p className="mt-1 flex items-start justify-between gap-3"><span>Precio promocional</span>{amount(price.promotion_price_usd, category, rate)}</p>
+            {price.promotion_description && <p className="catalog-product-muted mt-1 text-xs">{price.promotion_description}</p>}
+          </div>}
+          <div className="mt-2 flex items-center gap-3"><button type="button" className={button} aria-label={`Reducir cantidad de ${item.product.name}`} onClick={() => item.quantity === 1 ? removeItem(item) : update(items.map((row) => row === item ? { ...row, quantity: row.quantity - 1 } : row))}>−</button><span>{item.quantity}</span><button type="button" className={button} aria-label={`Aumentar cantidad de ${item.product.name}`} disabled={!selected || !canAddCommercialQuantity(1, selected.stock, item.quantity)} onClick={() => add({ ...item, quantity: 1 })}>+</button><button type="button" className="min-h-11 font-semibold text-[#92002a] hover:underline" onClick={() => removeItem(item)}>Quitar</button></div>
+        </li>;
       })}</ul>}
       {items.length > 0 && <p className="mt-6 border-t border-[#e8e6e1] pt-4 font-semibold">Total estimado: {total === null ? "No disponible para esta forma de pago" : amount(total / 100, category, rate)}</p>}
       <CommercialCheckout items={items} payment={payment} setPayment={setPayment} rateAvailable={!!rate} siteKey={checkoutSiteKey} mode={checkoutMode} cartOpen={cartOpen} clear={clear} />

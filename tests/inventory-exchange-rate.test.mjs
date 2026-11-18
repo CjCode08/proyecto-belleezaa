@@ -6,9 +6,10 @@ import { createRequire } from "node:module";
 import { runInNewContext } from "node:vm";
 
 test("acepta tasas positivas de hasta seis decimales", () => {
-  assert.equal(parseExchangeRate(" 897.5383 "), "897.5383");
+  assert.equal(parseExchangeRate(" 897,5383 "), "897.5383");
   assert.equal(parseExchangeRate("0,000001"), "0.000001");
-  assert.equal(parseExchangeRate("9999999999.999999"), "9999999999.999999");
+  assert.equal(parseExchangeRate("9999999999,999999"), "9999999999.999999");
+  assert.equal(parseExchangeRate("897.5383"), null);
 });
 
 test("valida y muestra fechas sin convertirlas a otra zona horaria", () => {
@@ -22,7 +23,7 @@ test("valida y muestra fechas sin convertirlas a otra zona horaria", () => {
 });
 
 test("rechaza tasas nulas, negativas, imprecisas o fuera del límite", () => {
-  for (const rate of ["", "0", "-1", "1.0000001", "10000000000", "1e3", "NaN", "1,5.1"]) {
+  for (const rate of ["", "0", "-1", "1,0000001", "1.0000001", "10000000000", "1e3", "NaN", "1,5.1"]) {
     assert.equal(parseExchangeRate(rate), null);
   }
 });

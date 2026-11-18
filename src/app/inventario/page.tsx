@@ -5,7 +5,6 @@ import { createSupabaseServerClient } from "@/lib/supabase/server";
 import { getSignedInventoryImageUrls } from "@/lib/inventory/images";
 import { inventoryPageHref, inventoryProductsQuery, inventorySearchError, maxInventorySearchLength } from "@/lib/inventory/search";
 import { ProductActions } from "./product-actions";
-import { logout } from "../login/actions";
 import { productStatusClass } from "./ui";
 import { audiences } from "@/lib/inventory/product-fields";
 
@@ -75,11 +74,6 @@ export default async function InventoryPage({ searchParams }: { searchParams: Pr
             <Link href="/inventario/nuevo" className="rounded-xl bg-rose-600 px-4 py-2 text-sm font-semibold text-white hover:bg-rose-700">
               Nuevo producto
             </Link>
-            <form action={logout}>
-              <button className="rounded-xl border border-rose-200 bg-white px-4 py-2 text-sm font-semibold text-rose-700 hover:bg-rose-50">
-                Cerrar sesión
-              </button>
-            </form>
           </div>
         </header>
 

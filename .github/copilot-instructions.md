@@ -89,6 +89,7 @@ El proyecto se ejecuta de forma secuencial. No desarrollar etapas futuras sin co
 - Conversión pública a Bs. usa solo tasa del día; usuario ejecutó `supabase/migrations/20261109160000_catalog_current_rate.sql` y se verificó la consulta anónima.
 - Imágenes de catálogo: solo admin gestiona; SQL `supabase/migrations/20261109150000_catalog_images.sql` ejecutado; usuario confirmó carga y vista; operaciones anónimas rechazadas.
 - **Tasa USD/VES:** ingreso manual exclusivo del administrador desde el panel, con fecha e histórico; normalmente se carga el día anterior y se mantiene durante su fecha. Solo usar tasa de hoy (Caracas); si falta, alertar y bloquear pedidos. Permitir tasas futuras; si cambia, el vendedor lo comunica por WhatsApp.
+- Panel de tasa: el campo solo acepta coma decimal y hasta seis decimales; el punto se rechaza. Los valores almacenados se parsean internamente con punto para los cálculos.
 - Usuario ejecutó SQL de fecha e histórico `supabase/migrations/20261109120000_exchange_rate_dates_history.sql`; panel de tasa muestra formulario e histórico simplificado. Auditoría permanece en la BD.
 - Gestión de tasas con fecha única, edición, eliminación y auditoría: SQL `supabase/migrations/20261109130000_exchange_rate_manage.sql` ejecutado; usuario confirmó pruebas y acceso anónimo rechazado.
 - **Vendedores:** Carrito asistido, trazabilidad de pedidos por vendedor y multimoneda (USD/VES).
