@@ -6,7 +6,7 @@ import { isStoreRoot } from "@/lib/catalog/store-domain";
 export async function proxy(request: NextRequest) {
   if (isStoreRoot(request.nextUrl.pathname, request.headers.get("host"))) {
     const url = request.nextUrl.clone();
-    url.pathname = "/catalogo";
+    url.pathname = "/inicio";
     return NextResponse.redirect(url);
   }
   let response = NextResponse.next({ request });

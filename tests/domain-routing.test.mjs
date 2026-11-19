@@ -55,11 +55,11 @@ async function redirectFor(host, path = "/") {
   return { status: response.status, location: response.headers.get("location") };
 }
 
-test("la raíz de la tienda redirige al catálogo", async () => {
+test("la raíz de la tienda redirige a la portada", async () => {
   for (const host of ["www.belleezaa.com", "belleezaa.com"]) {
     const result = await redirectFor(host);
     assert.equal(result.status, 307);
-    assert.equal(new URL(result.location, `https://${host}`).pathname, "/catalogo");
+    assert.equal(new URL(result.location, `https://${host}`).pathname, "/inicio");
   }
 });
 
@@ -87,13 +87,13 @@ test("el proxy reconoce solo la raíz de la tienda antes de exigir sesión", () 
   }
 });
 
-test("el proxy redirige la raíz pública al catálogo sin consultar sesión", async () => {
+test("el proxy redirige la raíz pública a la portada sin consultar sesión", async () => {
   for (const host of ["www.belleezaa.com", "belleezaa.com", "WWW.BELLEEZAA.COM:443"]) {
     const { proxy, authCalls } = proxyWithSession();
     const response = await proxy(new NextRequest(`https://${host}/?origen=prueba`, { headers: { host } }));
     const destination = new URL(response.headers.get("location"));
     assert.equal(response.status, 307);
-    assert.equal(destination.pathname, "/catalogo");
+    assert.equal(destination.pathname, "/inicio");
     assert.equal(destination.search, "?origen=prueba");
     assert.equal(authCalls(), 0);
   }

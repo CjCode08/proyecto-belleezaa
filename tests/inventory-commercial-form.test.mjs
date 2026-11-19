@@ -50,6 +50,18 @@ test("el formulario muestra selectores independientes para ambas promociones", (
   for (const [select] of selectors) {
     for (const quantity of [2, 3, 4]) assert.match(select, new RegExp(`<option value="${quantity}">${quantity} unidades</option>`));
   }
+  const stockHtml = renderToStaticMarkup(React.createElement(componentExports.CommercialFields, {
+    bundles: [
+      { id: "nuevo", assortment_description: "Nuevo" },
+      { id: "sin-stock", assortment_description: "Sin stock", stock: 0 },
+      { id: "existente", assortment_description: "Existente", stock: 5 },
+    ],
+  }));
+  const stockInputs = [...stockHtml.matchAll(/<input\b[^>]*name="bundleStock"[^>]*>/g)].map(([input]) => input);
+  assert.equal(stockInputs.length, 3);
+  assert.match(stockInputs[0], /value=""/);
+  assert.match(stockInputs[1], /value="0"/);
+  assert.match(stockInputs[2], /value="5"/);
 });
 
 test("la vista previa no conecta la acción de guardado y deshabilita el envío", () => {

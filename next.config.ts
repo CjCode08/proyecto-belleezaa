@@ -4,8 +4,8 @@ const nextConfig: NextConfig = {
   /* config options here */
   redirects() {
     return [
-      { source: "/", has: [{ type: "host", value: "www\\.belleezaa\\.com" }], destination: "/catalogo", permanent: false },
-      { source: "/", has: [{ type: "host", value: "belleezaa\\.com" }], destination: "/catalogo", permanent: false },
+      { source: "/", has: [{ type: "host", value: "www\\.belleezaa\\.com" }], destination: "/inicio", permanent: false },
+      { source: "/", has: [{ type: "host", value: "belleezaa\\.com" }], destination: "/inicio", permanent: false },
       { source: "/", destination: "/inventario/panel", permanent: false },
     ];
   },

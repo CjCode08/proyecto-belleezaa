@@ -82,7 +82,7 @@ export function CommercialFields({ prices = [], bundles = [], canDelete = true }
             </label>
             <label className="text-sm font-medium">Bultos disponibles
               <input name="bundleStock" type="number" min="0" max="2147483647" step="1" required
-                defaultValue={bundle.stock ?? 0} className={fieldClass} />
+                defaultValue={bundle.stock ?? ""} className={fieldClass} />
             </label>
             {(!bundle.id || canDelete) && (
               <button type="button" className="text-left text-sm font-semibold text-rose-700"

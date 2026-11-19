@@ -2,7 +2,7 @@ import Link from "next/link";
 import type { Metadata } from "next";
 import { connection } from "next/server";
 import { headers } from "next/headers";
-import { Camera, MessageCircle } from "lucide-react";
+import { Camera, MessageCircle, Music2 } from "lucide-react";
 import { Lobster, Outfit, Plus_Jakarta_Sans } from "next/font/google";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
 import { catalogPageHref, catalogPageSize, validCatalogAudience, validCatalogSearch } from "@/lib/catalog/search";
@@ -174,6 +174,9 @@ export default async function CatalogPage({ searchParams }: { searchParams: Prom
             <div className="mt-3 flex flex-col items-start gap-3 text-sm text-[#f8eef1]">
               <a href="https://www.instagram.com/bo.chicasintimas/" target="_blank" rel="noopener noreferrer" className="inline-flex min-h-11 items-center gap-2 underline decoration-[#8f6f71] underline-offset-4 hover:text-[#ffb2b7]">
                 <Camera size={18} aria-hidden="true" /> Instagram
+              </a>
+              <a href="https://www.tiktok.com/@bo.chicasintimas?_r=1&_t=ZS-9BXKSgJtj4n" target="_blank" rel="noopener noreferrer" className="inline-flex min-h-11 items-center gap-2 underline decoration-[#8f6f71] underline-offset-4 hover:text-[#ffb2b7]">
+                <Music2 size={18} aria-hidden="true" /> TikTok
               </a>
               <a href="https://whatsapp.com/channel/0029VakYaoQ4IBhD6xo4vq1u" target="_blank" rel="noopener noreferrer" className="inline-flex min-h-11 items-center gap-2 underline decoration-[#8f6f71] underline-offset-4 hover:text-[#ffb2b7]">
                 <MessageCircle size={18} aria-hidden="true" /> Canal de WhatsApp
