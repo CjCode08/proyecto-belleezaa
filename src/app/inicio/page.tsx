@@ -48,35 +48,31 @@ export default async function StoreHomePage() {
     const path = firstImages.get(productId);
     return path ? imageUrls.get(path) : undefined;
   };
-  const heroProduct = products.find((product) => productImage(product.id));
-  const heroImage = heroProduct ? productImage(heroProduct.id) : undefined;
-
   return (
     <div className={`${lobster.variable} ${outfit.variable} ${jakarta.variable} bg-[#faf9f6] font-[family-name:var(--font-inicio-body)] text-[#1e1a1c]`}>
       <a href="#contenido" className="sr-only focus:not-sr-only focus:absolute focus:z-50 focus:bg-white focus:p-3">Ir al contenido</a>
       <header className="border-b border-[#e8e6e1] bg-[#faf9f6]">
         <nav aria-label="Navegación principal" className="mx-auto flex min-h-16 max-w-7xl flex-wrap items-center justify-between gap-x-4 gap-y-2 px-4 py-2 sm:px-6 lg:px-8">
           <Link href="/inicio" className="font-[family-name:var(--font-inicio-brand)] text-3xl text-[#b50638]">Belleezaa<span aria-hidden="true">.</span></Link>
-          <div className="flex flex-wrap items-center justify-end gap-x-4 gap-y-1 text-sm font-semibold sm:gap-x-6">
-            <Link href="/catalogo" className="inline-flex min-h-11 items-center hover:text-[#b50638]">Catálogo</Link>
-            <a href="#categorias" className="inline-flex min-h-11 items-center hover:text-[#b50638]">Categorías</a>
-            <a href="#nosotros" className="hidden min-h-11 items-center hover:text-[#b50638] sm:inline-flex">Nosotros</a>
-            <a href={contactUrl} target="_blank" rel="noopener noreferrer" className="inline-flex min-h-11 items-center gap-1 text-[#92002a] hover:underline"><MessageCircle size={17} aria-hidden="true" /> Contacto</a>
+          <div className="flex flex-wrap items-center justify-end gap-2 text-sm font-semibold">
+            <Link href="/catalogo" className="catalog-nav-link catalog-nav-link-current inline-flex min-h-11 items-center rounded-md px-3 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#b50638]">Catálogo</Link>
+            <a href="#categorias" className="catalog-nav-link inline-flex min-h-11 items-center rounded-md px-3 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#b50638]">Categorías</a>
+            <a href="#nosotros" className="catalog-nav-link inline-flex min-h-11 items-center rounded-md px-3 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#b50638]">Nosotros</a>
+            <a href={contactUrl} target="_blank" rel="noopener noreferrer" className="catalog-nav-link inline-flex min-h-11 items-center gap-2 rounded-md px-3 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#b50638]"><MessageCircle size={17} aria-hidden="true" /> Contacto</a>
           </div>
         </nav>
       </header>
 
       <main id="contenido">
-        <section className="relative isolate flex min-h-[440px] items-center overflow-hidden bg-[#342f31] text-white sm:min-h-[500px] lg:min-h-[560px]">
-          {heroImage && <Image src={heroImage} alt={heroProduct?.name ?? "Prenda disponible en Belleezaa"} fill priority unoptimized sizes="100vw" className="z-0 object-cover object-center" />}
-          <div aria-hidden="true" className="absolute inset-0 z-10 bg-black/55" />
-          <div className="relative z-20 mx-auto w-full max-w-7xl px-4 py-16 sm:px-6 lg:px-8">
-            <p className="text-sm font-semibold uppercase">Nuestra tienda en Valencia</p>
+        <section className="flex min-h-[400px] items-center border-b-8 border-[#720429] bg-[#a90c38] text-white sm:min-h-[440px]">
+          <div className="mx-auto w-full max-w-7xl px-4 py-16 sm:px-6 lg:px-8">
+            <p className="text-sm font-semibold uppercase text-white">Nuestra tienda en Valencia</p>
             <h1 className="mt-3 font-[family-name:var(--font-inicio-brand)] text-6xl leading-tight sm:text-7xl lg:text-8xl">Belleezaa</h1>
+            <div aria-hidden="true" className="mt-4 h-1 w-16 bg-[#ffd9dd]" />
             <p className="mt-4 max-w-md text-base leading-7 text-white sm:text-lg">Encuentra prendas para acompañarte cada día.</p>
             <div className="mt-8 flex flex-wrap gap-3">
-              <Link href="/catalogo" className="inline-flex min-h-12 items-center justify-center gap-2 rounded-md bg-[#b50638] px-5 text-sm font-semibold text-white hover:bg-[#92002a] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white">Explorar catálogo <ArrowRight size={17} aria-hidden="true" /></Link>
-              <a href={contactUrl} target="_blank" rel="noopener noreferrer" className="inline-flex min-h-12 items-center justify-center gap-2 rounded-md border border-white px-5 text-sm font-semibold text-white hover:bg-white hover:text-[#1e1a1c] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white"><MessageCircle size={17} aria-hidden="true" /> Hablar por WhatsApp</a>
+              <Link href="/catalogo" className="inline-flex min-h-12 items-center justify-center gap-2 rounded-md bg-white px-5 text-sm font-semibold text-[#720429] transition-colors hover:bg-[#ffd9dd] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white">Explorar catálogo <ArrowRight size={17} aria-hidden="true" /></Link>
+              <a href={contactUrl} target="_blank" rel="noopener noreferrer" className="inline-flex min-h-12 items-center justify-center gap-2 rounded-md border border-white px-5 text-sm font-semibold text-white transition-colors hover:bg-[#720429] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white"><MessageCircle size={17} aria-hidden="true" /> Hablar por WhatsApp</a>
             </div>
           </div>
         </section>
