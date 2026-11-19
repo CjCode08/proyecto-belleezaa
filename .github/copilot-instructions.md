@@ -5,6 +5,7 @@
 - Los ajustes principales incluyen: precios con bultos y promociones, SKU base/variantes, control de visibilidad del catálogo, tasas manuales y pruebas funcionales específicas.
 - Catálogo e inventario comparten un selector persistente de tema claro/oscuro; las tarjetas muestran resumen en divisas y el detalle conserva ambas listas en USD. El catálogo oculta la tasa, limita cantidades al stock, mantiene la cabecera fija e incluye contactos y ubicación en el footer.
 - Catálogo: el detalle muestra ambas listas de precios en USD; la tasa se conserva internamente y no se publica. La ficha permite agregar cantidades hasta el stock restante y las tarjetas usan proporción cuadrada.
+- Navegación del catálogo: la marca enlaza a `/inicio`; catálogo, búsqueda y carrito tienen accesos visibles e interactivos también en móvil.
 - El catálogo comercial se activa al desplegar; `CATALOG_MAINTENANCE=true` lo pausa. El usuario aprobó productos, precios y promociones; conservarlos sin cambios. El usuario confirmó la tasa del 17/11/2026 cargada. El checkout real público requiere configuración de Production antes de habilitarse.
 
 ## 1. Stack Tecnológico y Directrices Generales

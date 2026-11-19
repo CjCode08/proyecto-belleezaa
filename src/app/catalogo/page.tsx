@@ -2,7 +2,7 @@ import Link from "next/link";
 import type { Metadata } from "next";
 import { connection } from "next/server";
 import { headers } from "next/headers";
-import { Camera, MessageCircle, Music2 } from "lucide-react";
+import { Camera, MessageCircle, Music2, Search, Sparkles } from "lucide-react";
 import { Lobster, Outfit, Plus_Jakarta_Sans } from "next/font/google";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
 import { catalogPageHref, catalogPageSize, validCatalogAudience, validCatalogSearch } from "@/lib/catalog/search";
@@ -107,18 +107,18 @@ export default async function CatalogPage({ searchParams }: { searchParams: Prom
       <CommercialCart rate={rate?.rate ?? null} checkoutMode={checkoutMode} checkoutSiteKey={checkoutSiteKey}>
       <a href="#productos" className="sr-only focus:not-sr-only focus:absolute focus:left-4 focus:top-2 focus:z-50 focus:rounded-lg focus:bg-white focus:p-3 focus:text-[#92002a] focus:outline-2">Ir a los productos</a>
       <header className="sticky top-12 z-40 border-b border-[#e8e6e1] bg-[#faf9f6]">
-        <div className="mx-auto flex min-h-16 max-w-7xl items-center justify-between gap-4 px-4 sm:px-6 lg:px-8">
-          <Link href="/catalogo" aria-label="Belleezaa, catálogo" className="font-[family-name:var(--font-catalog-brand)] text-2xl focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-[#b50638]">
-            Belleezaa<span className="text-[#b50638]">.</span>
+        <div className="mx-auto flex min-h-16 max-w-7xl flex-wrap items-center justify-between gap-x-3 px-4 sm:px-6 lg:flex-nowrap lg:gap-6 lg:px-8">
+          <Link href="/inicio" aria-label="Belleezaa, ir al inicio" className="catalog-brand-link inline-flex min-h-16 shrink-0 items-center gap-1 font-[family-name:var(--font-catalog-brand)] text-2xl focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-[#b50638]">
+            Belleezaa<span className="text-[#b50638]">.</span><Sparkles size={14} aria-hidden="true" className="catalog-brand-sparkle" />
           </Link>
-          <nav aria-label="Navegación del catálogo" className="hidden items-center gap-8 text-sm font-semibold lg:flex">
-            <a href="#productos" className="text-[#b50638] underline decoration-2 underline-offset-8 focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-[#b50638]">Catálogo</a>
-            <a href="#buscar" className="text-[#5b4041] hover:text-[#b50638] focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-[#b50638]">Buscar prendas</a>
+          <nav aria-label="Navegación del catálogo" className="order-3 flex w-full items-center gap-2 pb-2 text-sm font-semibold lg:order-none lg:w-auto lg:flex-1 lg:justify-center lg:pb-0">
+            <a href="#productos" aria-current="page" className="catalog-nav-link catalog-nav-link-current inline-flex min-h-11 items-center gap-2 rounded-md px-4 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#b50638]">Catálogo</a>
+            <a href="#buscar" className="catalog-nav-link inline-flex min-h-11 items-center gap-2 rounded-md px-4 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#b50638]"><Search size={16} aria-hidden="true" /> Buscar prendas</a>
           </nav>
           <CommercialCartLink />
         </div>
       </header>
-      <main id="productos" className="mx-auto max-w-7xl scroll-mt-4 px-4 pb-12 sm:px-6 lg:px-8">
+      <main id="productos" className="mx-auto max-w-7xl scroll-mt-36 px-4 pb-12 sm:px-6 lg:scroll-mt-32 lg:px-8">
         <section className="border-b border-[#efe6e8] pb-6 pt-7 sm:pb-8 sm:pt-10">
           <p className="font-[family-name:var(--font-catalog-heading)] text-xs font-bold uppercase tracking-[0.18em] text-[#b50638]">Belleza · Colección</p>
           <h1 className="mt-1 font-[family-name:var(--font-catalog-brand)] text-5xl font-normal sm:text-6xl lg:text-7xl">Catálogo</h1>
@@ -130,7 +130,7 @@ export default async function CatalogPage({ searchParams }: { searchParams: Prom
           {checkoutSiteKey ? checkoutMode === "test" ? "Solicitud de prueba: no es una compra real." : "El vendedor confirmará precios y disponibilidad." : "Los pedidos no están habilitados en este momento."}
         </p>
         </div>
-        <div id="buscar" className="scroll-mt-4">
+        <div id="buscar" className="scroll-mt-36 lg:scroll-mt-32">
           <div className="py-5 lg:hidden"><CatalogFilters key={JSON.stringify([search, audience, category])} search={search} audience={audience} category={category} categories={categories} mobile /></div>
         </div>
         {!validSearch && <p role="alert" className="mt-2 text-sm text-red-700">La búsqueda admite hasta 120 caracteres sin caracteres de control.</p>}

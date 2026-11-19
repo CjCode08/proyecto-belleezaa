@@ -98,6 +98,29 @@
   color: var(--surface-accent);
 }
 
+.catalog-brand-link { color: var(--foreground); }
+.catalog-brand-sparkle { color: var(--surface-accent); }
+.catalog-nav-link {
+  color: #720429;
+  background-color: #f7e9ed;
+  transition: background-color 160ms ease, color 160ms ease, transform 160ms ease;
+}
+.catalog-nav-link-current { color: #ffffff; background-color: #b50638; }
+.catalog-nav-link:hover { color: #ffffff; background-color: #92002a; }
+.catalog-nav-link:active, .catalog-cart-trigger:active { transform: scale(0.97); }
+.catalog-cart-trigger {
+  color: #720429;
+  background-color: #ffd9dd;
+  transition: background-color 160ms ease, color 160ms ease, transform 160ms ease;
+}
+.catalog-cart-trigger:hover { color: #ffffff; background-color: #92002a; }
+.catalog-cart-count { color: #ffffff; background-color: #92002a; }
+:root[data-theme="dark"] .catalog-nav-link { color: #ffccd4; background-color: #4a252f; }
+:root[data-theme="dark"] .catalog-nav-link-current { color: #ffffff; background-color: #a90c38; }
+:root[data-theme="dark"] .catalog-nav-link:hover { color: #ffffff; background-color: #b50638; }
+:root[data-theme="dark"] .catalog-cart-trigger { color: #ffccd4; background-color: #4a252f; }
+:root[data-theme="dark"] .catalog-cart-trigger:hover { color: #ffffff; background-color: #b50638; }
+
 .catalog-product-card {
   border-color: var(--surface-border);
   background-color: var(--surface-card);
@@ -120,6 +143,7 @@
 .catalog-product-accent { color: var(--surface-accent); }
 
 @media (prefers-reduced-motion: reduce) {
+  .catalog-nav-link, .catalog-cart-trigger { transition: none; }
   .catalog-product-card { transition: none; }
   .catalog-product-card:hover { transform: none; }
 }

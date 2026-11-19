@@ -99,7 +99,7 @@ export function CommercialCartLink() {
   const cart = useContext(CartContext);
   if (!cart) throw new Error("El carrito no está disponible.");
   const count = cart.items.reduce((sum, item) => sum + item.quantity, 0);
-  return <button type="button" onClick={cart.open} className="inline-flex min-h-11 items-center gap-2 text-sm font-semibold focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-[#b50638]"><ShoppingBag size={20} aria-hidden="true" /> Ver tu Carrito <span className="rounded-full bg-[#b50638] px-2 py-0.5 text-xs text-white">{count}</span></button>;
+  return <button type="button" onClick={cart.open} className="catalog-cart-trigger inline-flex min-h-11 items-center gap-2 rounded-md px-3 text-sm font-semibold focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#b50638]"><ShoppingBag size={19} aria-hidden="true" /> <span className="hidden sm:inline">Ver tu carrito</span><span className="sm:hidden">Carrito</span> <span className="catalog-cart-count inline-flex min-w-6 items-center justify-center rounded-full px-1.5 py-0.5 text-xs">{count}</span></button>;
 }
 
 export function ProductDetails({ product, imageUrl, rate }: { product: CommercialProduct; imageUrl?: string; rate: string | null }) {
