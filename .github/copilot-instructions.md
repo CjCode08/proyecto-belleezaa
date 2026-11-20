@@ -6,6 +6,7 @@
 - Catálogo e inventario comparten un selector persistente de tema claro/oscuro; las tarjetas muestran resumen en divisas y el detalle conserva ambas listas en USD. El catálogo oculta la tasa, limita cantidades al stock, mantiene la cabecera fija e incluye contactos y ubicación en el footer.
 - Catálogo: el detalle muestra ambas listas de precios en USD; la tasa se conserva internamente y no se publica. La ficha permite agregar cantidades hasta el stock restante y las tarjetas usan proporción cuadrada.
 - Navegación del catálogo: la marca enlaza a `/inicio`; catálogo, búsqueda y carrito tienen accesos visibles e interactivos también en móvil.
+- La marca Belleezaa se muestra sin punto decorativo ni icono de brillo en la portada y el catálogo.
 - Portada `/inicio`: hero temporal en tonos rojos con marca en Lobster y navegación interactiva compatible con los temas claro y oscuro; la imagen guardada queda disponible para revisión futura.
 - El catálogo comercial se activa al desplegar; `CATALOG_MAINTENANCE=true` lo pausa. El usuario aprobó productos, precios y promociones; conservarlos sin cambios. El usuario confirmó la tasa del 17/11/2026 cargada. El checkout real público requiere configuración de Production antes de habilitarse.
 
@@ -31,7 +32,7 @@ Al diseñar o refactorizar interfaces de usuario (componentes React, maquetació
 El proyecto se ejecuta de forma secuencial. No desarrollar etapas futuras sin completar y verificar la actual:
 1. **Sistema de inventarios** *(etapa completada y verificada)*
 2. **E-commerce** *(etapa activa)*
-3. **Interfaz para vendedores**
+3. **Interfaz para vendedores** *(inicio autorizado para desarrollo y pruebas; no operativa en producción)*
 4. **Punto de ventas (POS)**
 5. **Panel administrativo**
 *Nota: Explicar siempre el plan en español y pedir verificación antes de iniciar una nueva etapa.*
@@ -94,7 +95,8 @@ El proyecto se ejecuta de forma secuencial. No desarrollar etapas futuras sin co
 - Panel de tasa: el campo solo acepta coma decimal y hasta seis decimales; el punto se rechaza. Los valores almacenados se parsean internamente con punto para los cálculos.
 - Usuario ejecutó SQL de fecha e histórico `supabase/migrations/20261109120000_exchange_rate_dates_history.sql`; panel de tasa muestra formulario e histórico simplificado. Auditoría permanece en la BD.
 - Gestión de tasas con fecha única, edición, eliminación y auditoría: SQL `supabase/migrations/20261109130000_exchange_rate_manage.sql` ejecutado; usuario confirmó pruebas y acceso anónimo rechazado.
-- **Vendedores:** Carrito asistido, trazabilidad de pedidos por vendedor y multimoneda (USD/VES).
+- **Vendedores:** entrada independiente en `/vendedores/login` por perfil activo `vendedor`; habilitar `SELLERS_PREVIEW_ENABLED=true` solo en entorno de prueba. Catálogo interno de inventario activo con stock (también oculto en la web) y búsqueda por SKU; requiere la migración `20261120100000_sellers_catalog_read.sql`, pendiente de ejecución manual en pruebas. El carrito guarda el borrador y genera un folio de caja simulada solo en el dispositivo. Pendiente verificar con una cuenta de prueba. La reserva acordada es de 30 minutos; el stock físico solo se descuenta al cobrar en POS. Sin reservas ni cobros operativos en esta etapa.
+- **Interfaz de Vendedores:** el usuario confirmó el ingreso con `vendedor01`. Login y panel en blanco hueso y rojo con soporte de tema oscuro; el carrito se abre con contador y permite sumar, restar y eliminar líneas. La foto principal de almacén se muestra solo en el módulo interno vía URLs firmadas; aplicar `20261120110000_sellers_inventory_images.sql` manualmente en pruebas. No cambia el catálogo público.
 - **POS:** Cierre de pedidos online/tienda y descuento automático de inventario.
 - **Panel Administrativo:** Métricas de ventas por periodo, comisiones, top de vendedores y productos, y stock tipo semáforo.
 - **Imágenes:** Fotos de inventario privadas; imágenes de catálogo mejoradas externamente, cargadas por separado y optimizadas por el sistema. Nunca usar fotos privadas como sustitutas.

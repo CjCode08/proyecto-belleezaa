@@ -7,7 +7,7 @@ export type CommercialPrice = {
   bundle_price_usd: number | null;
 };
 export type CommercialBundle = { id: string; description: string; stock: number };
-export type CommercialVariant = { id: string; size: string; color: string; stock: number };
+export type CommercialVariant = { id: string; size: string; color: string; stock: number; sku?: string | null };
 export type CommercialProduct = { id: string; name: string; description: string | null; category: string | null; variants: CommercialVariant[]; prices: CommercialPrice[]; bundles: CommercialBundle[] };
 export type CommercialItem = { product: CommercialProduct; kind: "variant" | "bundle"; selectionId: string; quantity: number };
 
@@ -41,6 +41,7 @@ export function parseCommercialProduct(value: unknown): CommercialProduct {
     || !Array.isArray(product.variants) || !Array.isArray(product.bundles) || !Array.isArray(product.prices)) throw new Error("Producto inválido.");
   for (const variant of product.variants) {
     if (!variant || typeof variant.id !== "string" || typeof variant.size !== "string" || typeof variant.color !== "string"
+      || !(variant.sku == null || typeof variant.sku === "string")
       || !Number.isSafeInteger(variant.stock) || variant.stock < 1) throw new Error("Variante inválida.");
   }
   for (const bundle of product.bundles) {

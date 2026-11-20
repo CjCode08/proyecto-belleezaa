@@ -53,7 +53,7 @@ export default async function StoreHomePage() {
       <a href="#contenido" className="sr-only focus:not-sr-only focus:absolute focus:z-50 focus:bg-white focus:p-3">Ir al contenido</a>
       <header className="border-b border-[#e8e6e1] bg-[#faf9f6]">
         <nav aria-label="Navegación principal" className="mx-auto flex min-h-16 max-w-7xl flex-wrap items-center justify-between gap-x-4 gap-y-2 px-4 py-2 sm:px-6 lg:px-8">
-          <Link href="/inicio" className="font-[family-name:var(--font-inicio-brand)] text-3xl text-[#b50638]">Belleezaa<span aria-hidden="true">.</span></Link>
+          <Link href="/inicio" className="font-[family-name:var(--font-inicio-brand)] text-3xl text-[#b50638]">Belleezaa</Link>
           <div className="flex flex-wrap items-center justify-end gap-2 text-sm font-semibold">
             <Link href="/catalogo" className="catalog-nav-link catalog-nav-link-current inline-flex min-h-11 items-center rounded-md px-3 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#b50638]">Catálogo</Link>
             <a href="#categorias" className="catalog-nav-link inline-flex min-h-11 items-center rounded-md px-3 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#b50638]">Categorías</a>
@@ -115,7 +115,7 @@ export default async function StoreHomePage() {
 
       <footer className="bg-[#1e1a1c] px-4 py-10 text-white sm:px-6 lg:px-8">
         <div className="mx-auto grid max-w-7xl gap-8 sm:grid-cols-2 lg:grid-cols-3">
-          <div><p className="font-[family-name:var(--font-inicio-brand)] text-3xl">Belleezaa<span className="text-[#ffb2b7]">.</span></p><p className="mt-2 text-sm text-[#e9e0e3]">Prendas para acompañarte cada día.</p></div>
+          <div><p className="font-[family-name:var(--font-inicio-brand)] text-3xl">Belleezaa</p><p className="mt-2 text-sm text-[#e9e0e3]">Prendas para acompañarte cada día.</p></div>
           <div><h2 className="text-sm font-semibold">Síguenos</h2><div className="mt-3 flex flex-col items-start text-sm">
             <a href="https://www.instagram.com/bo.chicasintimas/" target="_blank" rel="noopener noreferrer" className="inline-flex min-h-11 items-center gap-2 hover:underline"><Camera size={17} aria-hidden="true" /> Instagram</a>
             <a href="https://www.tiktok.com/@bo.chicasintimas?_r=1&_t=ZS-9BXKSgJtj4n" target="_blank" rel="noopener noreferrer" className="inline-flex min-h-11 items-center gap-2 hover:underline"><Music2 size={17} aria-hidden="true" /> TikTok</a>

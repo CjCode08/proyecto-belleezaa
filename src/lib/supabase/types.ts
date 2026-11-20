@@ -301,6 +301,14 @@ export type Database = {
         Args: { p_search: string; p_offset: number; p_audience: string; p_category: string };
         Returns: { id: string; name: string; description: string | null; category: string | null; variants: Json; prices: Json; bundles: Json }[];
       };
+      sellers_catalog_products: {
+        Args: { p_search: string; p_offset: number };
+        Returns: Database["public"]["Functions"]["catalog_commercial_products"]["Returns"];
+      };
+      sellers_inventory_images: {
+        Args: { p_product_ids: string[] };
+        Returns: { product_id: string; image_url: string }[];
+      };
       catalog_filtered_products: {
         Args: { p_search: string; p_offset: number; p_audience: string; p_category: string };
         Returns: Database["public"]["Functions"]["catalog_list_products"]["Returns"];

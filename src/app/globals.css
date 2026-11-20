@@ -1,5 +1,29 @@
 @import "tailwindcss";
 
+.seller-surface {
+  --seller-canvas: #f7f4ed;
+  --seller-paper: #fffdf8;
+  --seller-ink: #271f20;
+  --seller-muted: #645657;
+  --seller-line: #ded4cb;
+  --seller-accent: #a50e34;
+  --seller-action: #a50e34;
+  --seller-hover: #850927;
+  background-color: var(--seller-canvas);
+  color: var(--seller-ink);
+}
+
+:root[data-theme="dark"] .seller-surface {
+  --seller-canvas: #211e1d;
+  --seller-paper: #2b2525;
+  --seller-ink: #f7f1e8;
+  --seller-muted: #d3c4c0;
+  --seller-line: #675652;
+  --seller-accent: #ffabb9;
+  --seller-action: #ad1941;
+  --seller-hover: #951235;
+}
+
 :root {
   color-scheme: light;
   --background: #ffffff;
@@ -99,7 +123,6 @@
 }
 
 .catalog-brand-link { color: var(--foreground); }
-.catalog-brand-sparkle { color: var(--surface-accent); }
 .catalog-nav-link {
   color: #720429;
   background-color: #f7e9ed;

@@ -1,12 +1,22 @@
 "use server";
 
-import { redirect } from "next/navigation";
+import { notFound, redirect } from "next/navigation";
+import { staffDestination } from "@/lib/auth/staff-destination";
 import { usernameToInternalEmail } from "@/lib/auth/username";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
 
 export type LoginState = { error?: string };
 
 export async function login(_state: LoginState, formData: FormData): Promise<LoginState> {
+  return signIn(formData, "/inventario/panel");
+}
+
+export async function loginSeller(_state: LoginState, formData: FormData): Promise<LoginState> {
+  if (process.env.SELLERS_PREVIEW_ENABLED !== "true") notFound();
+  return signIn(formData, "/vendedores");
+}
+
+async function signIn(formData: FormData, portal: "/inventario/panel" | "/vendedores"): Promise<LoginState> {
   const username = formData.get("username");
   const password = formData.get("password");
   const email = typeof username === "string" ? usernameToInternalEmail(username) : null;
@@ -37,22 +47,30 @@ export async function login(_state: LoginState, formData: FormData): Promise<Log
     return { error: "No se pudo verificar el acceso. Inténtalo más tarde." };
   }
 
-  if (!profile || !profile.is_active || !["admin", "personal"].includes(profile.role) ||
-      !profile.username || usernameToInternalEmail(profile.username) !== email) {
+  const destination = staffDestination(profile, process.env.SELLERS_PREVIEW_ENABLED === "true");
+  if (destination !== portal || !profile?.username || usernameToInternalEmail(profile.username) !== email) {
     const { error: signOutError } = await supabase.auth.signOut();
     if (signOutError) console.error("Error al cerrar la sesión:", signOutError);
-    return { error: "La cuenta no tiene acceso al inventario. Contacta al administrador." };
+    return { error: "La cuenta no tiene acceso. Contacta al administrador." };
   }
 
-  redirect("/inventario/panel");
+  redirect(destination);
 }
 
 export async function logout() {
+  await signOut("/login");
+}
+
+export async function logoutSeller() {
+  await signOut("/vendedores/login");
+}
+
+async function signOut(destination: string) {
   const supabase = await createSupabaseServerClient();
   const { error } = await supabase.auth.signOut();
   if (error) {
     console.error("Error al cerrar la sesión:", error);
     throw new Error("No se pudo cerrar la sesión.");
   }
-  redirect("/login");
+  redirect(destination);
 }

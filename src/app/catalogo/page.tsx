@@ -2,7 +2,7 @@ import Link from "next/link";
 import type { Metadata } from "next";
 import { connection } from "next/server";
 import { headers } from "next/headers";
-import { Camera, MessageCircle, Music2, Search, Sparkles } from "lucide-react";
+import { Camera, MessageCircle, Music2, Search } from "lucide-react";
 import { Lobster, Outfit, Plus_Jakarta_Sans } from "next/font/google";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
 import { catalogPageHref, catalogPageSize, validCatalogAudience, validCatalogSearch } from "@/lib/catalog/search";
@@ -108,8 +108,8 @@ export default async function CatalogPage({ searchParams }: { searchParams: Prom
       <a href="#productos" className="sr-only focus:not-sr-only focus:absolute focus:left-4 focus:top-2 focus:z-50 focus:rounded-lg focus:bg-white focus:p-3 focus:text-[#92002a] focus:outline-2">Ir a los productos</a>
       <header className="sticky top-12 z-40 border-b border-[#e8e6e1] bg-[#faf9f6]">
         <div className="mx-auto flex min-h-16 max-w-7xl flex-wrap items-center justify-between gap-x-3 px-4 sm:px-6 lg:flex-nowrap lg:gap-6 lg:px-8">
-          <Link href="/inicio" aria-label="Belleezaa, ir al inicio" className="catalog-brand-link inline-flex min-h-16 shrink-0 items-center gap-1 font-[family-name:var(--font-catalog-brand)] text-2xl focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-[#b50638]">
-            Belleezaa<span className="text-[#b50638]">.</span><Sparkles size={14} aria-hidden="true" className="catalog-brand-sparkle" />
+          <Link href="/inicio" aria-label="Belleezaa, ir al inicio" className="catalog-brand-link inline-flex min-h-16 shrink-0 items-center font-[family-name:var(--font-catalog-brand)] text-2xl focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-[#b50638]">
+            Belleezaa
           </Link>
           <nav aria-label="Navegación del catálogo" className="order-3 flex w-full items-center gap-2 pb-2 text-sm font-semibold lg:order-none lg:w-auto lg:flex-1 lg:justify-center lg:pb-0">
             <a href="#productos" aria-current="page" className="catalog-nav-link catalog-nav-link-current inline-flex min-h-11 items-center gap-2 rounded-md px-4 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#b50638]">Catálogo</a>
@@ -166,7 +166,7 @@ export default async function CatalogPage({ searchParams }: { searchParams: Prom
       <footer className="bg-[#1e1a1c] px-4 py-8 text-white sm:px-6 lg:px-8">
         <div className="mx-auto grid max-w-7xl gap-8 sm:grid-cols-2 lg:grid-cols-4">
           <div>
-            <p className="font-[family-name:var(--font-catalog-brand)] text-3xl">Belleezaa<span className="text-[#ffb2b7]">.</span></p>
+            <p className="font-[family-name:var(--font-catalog-brand)] text-3xl">Belleezaa</p>
             <p className="mt-2 text-sm text-[#e9e0e3]">Prendas para acompañarte cada día.</p>
           </div>
           <section aria-labelledby="catalog-social-title">
