@@ -12,7 +12,7 @@
 
 ## Alta de vendedores en pruebas
 
-1. Usa un proyecto Supabase de prueba que ya tenga el esquema comercial del inventario y algunos productos de prueba activos con stock y precios. Revisa y ejecuta una sola vez [la migración de lectura para vendedores](migrations/20261120100000_sellers_catalog_read.sql) en su SQL Editor. No ejecutes nada en producción.
+1. Usa el proyecto Supabase de prueba que contiene el esquema comercial y productos activos con stock y precios. El usuario ya aplicó las migraciones `20261120100000_sellers_catalog_read.sql`, `20261120110000_sellers_inventory_images.sql` y `20261123100000_sellers_orders.sql`; **no las vuelvas a ejecutar**. Aplica una sola vez [la corrección de reservas](migrations/20261123110000_sellers_order_returning_fix.sql) y [la actualización de datos del cliente](migrations/20261123120000_sellers_customer_fields.sql) en ese mismo proyecto de prueba. No ejecutes ninguna migración en producción.
 2. Elige un usuario único en minúsculas (de 3 a 32 caracteres, como `vendedor01`). En SQL Editor, obtiene su identificador interno cambiando el ejemplo por el usuario elegido:
 
 	```sql
@@ -27,7 +27,9 @@
 	values ('00000000-0000-0000-0000-000000000000'::uuid, 'Vendedor de prueba', 'vendedor', true, 'vendedor01');
 	```
 
-5. Configura la vista previa local para que apunte al Supabase de prueba (`NEXT_PUBLIC_SUPABASE_URL` y `NEXT_PUBLIC_SUPABASE_ANON_KEY`), habilita `SELLERS_PREVIEW_ENABLED=true` y reinicia el servidor. En `/vendedores/login`, escribe `vendedor01`, no el correo interno. Prueba búsqueda por SKU, recuperación del carrito al recargar y generación del folio `SIM-`. El folio se queda en el dispositivo y no reserva ni descuenta stock.
+5. Configura la vista previa local para que apunte al Supabase de prueba (`NEXT_PUBLIC_SUPABASE_URL` y `NEXT_PUBLIC_SUPABASE_ANON_KEY`), habilita `SELLERS_PREVIEW_ENABLED=true` y reinicia el servidor. En `/vendedores/login`, escribe `vendedor01`, no el correo interno. Prueba búsqueda por SKU, fotos privadas, recuperación del carrito al recargar, creación idempotente y que una reserva reduzca las unidades disponibles durante 30 minutos. La reserva no descuenta stock físico.
 6. Comprueba que esa cuenta no entra al panel de inventario y que un administrador de inventario no entra a Vendedores. En pruebas, desactiva el perfil en `public.profiles` y comprueba que la cuenta pierde el acceso; vuelve a activarlo solo cuando corresponda. Crea más cuentas únicamente después de verificar la primera.
 
-Para mostrar la foto principal de inventario en Vendedores, revisa y ejecuta [la migración de fotos privadas](migrations/20261120110000_sellers_inventory_images.sql) en el mismo proyecto de prueba. No hace público el bucket ni otorga permisos de carga o borrado. Recarga el panel con la cuenta de vendedor y verifica una prenda activa con stock y foto de almacén; el catálogo público no debe mostrar esa foto. Los enlaces firmados caducan en cinco minutos.
+Para mostrar la foto principal de inventario en Vendedores, ejecuta la migración de fotos indicada en el paso 1. No hace público el bucket ni otorga permisos de carga o borrado. Recarga el panel con la cuenta de vendedor y verifica una prenda activa con stock y foto de almacén; el catálogo público no debe mostrar esa foto. Los enlaces firmados caducan en cinco minutos.
+
+La pestaña **Creadas** lista todas las órdenes del vendedor; **En proceso** muestra órdenes impagas con reserva vigente, y **Completadas** queda vacía hasta que un POS registre el pago. Las reservas vencidas se muestran como vencidas en Creadas y ya no bloquean disponibilidad. La migración no cobra, marca pagos, modifica el stock físico ni habilita el módulo en producción.

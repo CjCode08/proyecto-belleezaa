@@ -1,17 +1,22 @@
+import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { LoginForm } from "@/app/login/form";
+
+export const metadata: Metadata = {
+  title: "Belleezaa | Ventas",
+  description: "Acceso de vendedores a Belleezaa",
+};
 
 export default function SellersLoginPage() {
   if (process.env.SELLERS_PREVIEW_ENABLED !== "true") notFound();
 
   return (
-    <main className="seller-surface grid min-h-dvh place-items-center px-4 py-10">
-      <section className="w-full max-w-sm rounded-lg border border-[var(--seller-line)] bg-[var(--seller-paper)] p-6 sm:p-8">
-      <header className="border-b border-[var(--seller-line)] pb-4">
-        <p className="font-serif text-xl font-bold text-[var(--seller-accent)]">Belleezaa</p>
-        <h1 className="mt-2 text-2xl font-semibold">Acceso de vendedores</h1>
-      </header>
-      <LoginForm sellers />
+    <main className="flex min-h-screen items-center justify-center bg-rose-50 px-4 py-8">
+      <section className="w-full max-w-md rounded-3xl border border-rose-100 bg-white p-7 shadow-sm sm:p-9">
+        <p className="text-sm font-bold uppercase tracking-widest text-rose-600">Belleezaa</p>
+        <h1 className="mt-3 text-2xl font-semibold text-slate-900">Acceso de vendedores</h1>
+        <p className="mt-2 text-sm text-slate-600">Ingresa con tu usuario y contraseña.</p>
+        <LoginForm sellers />
       </section>
     </main>
   );

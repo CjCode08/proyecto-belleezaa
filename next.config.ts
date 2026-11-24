@@ -2,6 +2,7 @@ import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
   /* config options here */
+  distDir: process.env.NEXT_DIST_DIR ?? ".next",
   redirects() {
     return [
       { source: "/", has: [{ type: "host", value: "www\\.belleezaa\\.com" }], destination: "/inicio", permanent: false },

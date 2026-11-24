@@ -309,6 +309,14 @@ export type Database = {
         Args: { p_product_ids: string[] };
         Returns: { product_id: string; image_url: string }[];
       };
+      sellers_create_order: {
+        Args: { p_key: string; p_payment_method: string; p_customer_name: string; p_customer_id: string; p_items: Json };
+        Returns: { order_id: string; status: string; total_usd: number; total_ves: number | null; exchange_rate: number | null; rate_date: string | null; expires_at: string; reused: boolean }[];
+      };
+      sellers_list_orders: {
+        Args: { p_status: string; p_offset: number };
+        Returns: { id: string; customer_name: string | null; customer_id: string | null; status: string; payment_method: string; total_usd: number; total_ves: number | null; exchange_rate: number | null; created_at: string; expires_at: string; items: Json }[];
+      };
       catalog_filtered_products: {
         Args: { p_search: string; p_offset: number; p_audience: string; p_category: string };
         Returns: Database["public"]["Functions"]["catalog_list_products"]["Returns"];

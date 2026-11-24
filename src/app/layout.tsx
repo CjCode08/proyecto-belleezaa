@@ -16,6 +16,9 @@ const geistMono = Geist_Mono({
 export const metadata: Metadata = {
   title: "Belleezaa | Inventario",
   description: "Sistema de inventario Belleezaa conectado con Supabase",
+  icons: {
+    icon: { url: "/faviconBelleezaa.png?v=2", type: "image/png", sizes: "512x512" },
+  },
 };
 
 export default function RootLayout({ children }: LayoutProps<"/">) {

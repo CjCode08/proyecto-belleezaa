@@ -1,24 +1,24 @@
 @import "tailwindcss";
 
 .seller-surface {
-  --seller-canvas: #f7f4ed;
-  --seller-paper: #fffdf8;
-  --seller-ink: #271f20;
-  --seller-muted: #645657;
-  --seller-line: #ded4cb;
-  --seller-accent: #a50e34;
-  --seller-action: #a50e34;
-  --seller-hover: #850927;
+  --seller-canvas: #fff4f5;
+  --seller-paper: #ffffff;
+  --seller-ink: #1e293b;
+  --seller-muted: #64748b;
+  --seller-line: #ffe4e6;
+  --seller-accent: #e11d48;
+  --seller-action: #e11d48;
+  --seller-hover: #be123c;
   background-color: var(--seller-canvas);
   color: var(--seller-ink);
 }
 
 :root[data-theme="dark"] .seller-surface {
-  --seller-canvas: #211e1d;
-  --seller-paper: #2b2525;
-  --seller-ink: #f7f1e8;
-  --seller-muted: #d3c4c0;
-  --seller-line: #675652;
+  --seller-canvas: #181819;
+  --seller-paper: #252526;
+  --seller-ink: #f5f2f1;
+  --seller-muted: #c9c4c3;
+  --seller-line: #625a5c;
   --seller-accent: #ffabb9;
   --seller-action: #ad1941;
   --seller-hover: #951235;
