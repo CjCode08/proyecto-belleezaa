@@ -84,7 +84,6 @@ export default async function SellersPage({ searchParams }: { searchParams: Prom
 
   return (
     <main className="seller-surface min-h-dvh bg-rose-50/30 text-slate-800">
-      {view !== "catalogo" && <RefreshSellerOrders />}
       <div className="mx-auto max-w-7xl px-4 py-6 sm:px-6 lg:px-8">
       <header className="flex flex-wrap items-center justify-between gap-4 rounded-2xl border border-rose-100 bg-white p-5 shadow-sm">
         <div>
@@ -104,6 +103,7 @@ export default async function SellersPage({ searchParams }: { searchParams: Prom
         <Link aria-current={view === "en-proceso" ? "page" : undefined} href={viewHref("en-proceso")} className={viewLinkClass("en-proceso")} prefetch={false}>En proceso</Link>
         <Link aria-current={view === "completadas" ? "page" : undefined} href={viewHref("completadas")} className={viewLinkClass("completadas")} prefetch={false}>Completadas</Link>
       </nav>
+      <div className="mt-4"><RefreshSellerOrders manual={view === "catalogo"} /></div>
       {view === "catalogo" && <Form action="/vendedores" key={search} className="mt-6 flex flex-wrap items-end gap-2">
         <div className="min-w-0 flex-1 basis-48">
           <label htmlFor="seller-search" className="block text-sm font-medium">Nombre, categor&iacute;a o SKU</label>

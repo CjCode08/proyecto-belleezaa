@@ -10,6 +10,7 @@ import { parseCommercialProduct } from "@/lib/catalog/commercial";
 import { isCheckoutTestEnabled } from "@/lib/catalog/checkout-origin";
 import { CommercialCart, CommercialCartLink, ProductDetails } from "./commercial-cart";
 import { CatalogFilters } from "./filters";
+import { RefreshCatalogStock } from "./refresh-stock";
 
 export const instant = false;
 export const metadata: Metadata = {
@@ -104,6 +105,7 @@ export default async function CatalogPage({ searchParams }: { searchParams: Prom
 
   return (
     <div className={`${outfit.variable} ${jakarta.variable} ${lobster.variable} min-h-screen bg-[#faf9f6] font-[family-name:var(--font-catalog-body)] text-[#1e1a1c]`}>
+      <RefreshCatalogStock />
       <CommercialCart rate={rate?.rate ?? null} checkoutMode={checkoutMode} checkoutSiteKey={checkoutSiteKey}>
       <a href="#productos" className="sr-only focus:not-sr-only focus:absolute focus:left-4 focus:top-2 focus:z-50 focus:rounded-lg focus:bg-white focus:p-3 focus:text-[#92002a] focus:outline-2">Ir a los productos</a>
       <header className="sticky top-12 z-40 border-b border-[#e8e6e1] bg-[#faf9f6]">

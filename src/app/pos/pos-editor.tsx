@@ -24,6 +24,12 @@ function notifySellerOrdersUpdated() {
   channel.postMessage({ type: "order-updated" });
   channel.close();
 }
+function notifyCatalogStockUpdated() {
+  if (typeof BroadcastChannel === "undefined") return;
+  const channel = new BroadcastChannel("belleza:catalog-stock-updated");
+  channel.postMessage({ type: "stock-updated" });
+  channel.close();
+}
 
 export function PosEditor({ order, availability, today, serverTime, returnHref }: { order: PosOrder; availability: PosAvailability; today: string; serverTime: string; returnHref: string }) {
   const router = useRouter();
@@ -186,6 +192,7 @@ export function PosEditor({ order, availability, today, serverTime, returnHref }
           setMessage(result.error ?? "Consulta la orden para verificar el cobro."); return;
         }
         notifySellerOrdersUpdated();
+        notifyCatalogStockUpdated();
         setCurrent(result.order); sessionStorage.removeItem(storageKey); window.dispatchEvent(new Event(eventName));
         if (typeof BroadcastChannel !== "undefined") {
           const channel = new BroadcastChannel("belleza:admin-sales-updated");
