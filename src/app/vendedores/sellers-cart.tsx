@@ -321,7 +321,7 @@ export function SellersCart({ sellerId, products, imageUrls, catalogUnavailable 
           })}
         </ul>
         <p className="mt-3 text-sm" aria-live="polite">Total estimado (USD): <strong>{total === null ? "Sin precio para esta forma de pago" : usd.format(total / 100)}</strong></p>
-        <p className="mt-2 text-xs text-[var(--seller-muted)]">Al crear la orden, las prendas se reservan durante 30 minutos. Caja confirmar&aacute; el pago.</p>
+        <p className="mt-2 text-xs text-[var(--seller-muted)]">Al crear la orden, las prendas se reservan durante 45 minutos. Cada vendedor puede mantener hasta 3 órdenes activas al mismo tiempo. Caja confirmar&aacute; el pago.</p>
         {orderError && <p role="alert" className="mt-3 text-sm text-[var(--seller-accent)]">{orderError}</p>}
           <button type="button" className={`${primaryStyle} mt-4 w-full`} disabled={!draft.items.length || total === null || isCreating || raw === undefined || draft.customerName.trim().split(/\s+/).length < 2 || !/^\d{6,12}$/.test(draft.customerId) || !isAttentionChannel(draft.attentionChannel)} onClick={submitOrder}>{isCreating ? "Guardando orden..." : pendingOrder ? "Reintentar envio" : "Crear orden"}</button>
         {backup && <p role="alert" className="mt-2 text-sm">No se pudo guardar en este dispositivo. El borrador se perder&aacute; al recargar.</p>}

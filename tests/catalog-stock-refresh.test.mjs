@@ -14,6 +14,7 @@ test("Vendedores actualiza el catálogo y ofrece refresco manual", () => {
   assert.match(sellerPage, /<RefreshSellerOrders manual=\{view === "catalogo"\} \/>/);
   assert.match(sellerRefresh, /Actualizar catálogo/);
   assert.match(sellerRefresh, /belleza:catalog-stock-updated/);
+  assert.match(sellerRefresh, /refreshIntervalMs = 30000/);
   assert.match(sellerRefresh, /setInterval/);
 });
 

@@ -1,3 +1,4 @@
+import Image from "next/image";
 import Link from "next/link";
 import type { Metadata } from "next";
 import { connection } from "next/server";
@@ -110,7 +111,8 @@ export default async function CatalogPage({ searchParams }: { searchParams: Prom
       <a href="#productos" className="sr-only focus:not-sr-only focus:absolute focus:left-4 focus:top-2 focus:z-50 focus:rounded-lg focus:bg-white focus:p-3 focus:text-[#92002a] focus:outline-2">Ir a los productos</a>
       <header className="sticky top-12 z-40 border-b border-[#e8e6e1] bg-[#faf9f6]">
         <div className="mx-auto flex min-h-16 max-w-7xl flex-wrap items-center justify-between gap-x-3 px-4 sm:px-6 lg:flex-nowrap lg:gap-6 lg:px-8">
-          <Link href="/inicio" aria-label="Belleezaa, ir al inicio" className="catalog-brand-link inline-flex min-h-16 shrink-0 items-center font-[family-name:var(--font-catalog-brand)] text-2xl focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-[#b50638]">
+          <Link href="/inicio" aria-label="Belleezaa, ir al inicio" className="catalog-brand-link inline-flex min-h-16 shrink-0 items-center gap-2 font-[family-name:var(--font-catalog-brand)] text-2xl focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-[#b50638]">
+            <Image src="/faviconBelleezaa.png" alt="" width={32} height={32} priority className="size-8 rounded-full" />
             Belleezaa
           </Link>
           <nav aria-label="Navegación del catálogo" className="order-3 flex w-full items-center gap-2 pb-2 text-sm font-semibold lg:order-none lg:w-auto lg:flex-1 lg:justify-center lg:pb-0">
@@ -169,7 +171,7 @@ export default async function CatalogPage({ searchParams }: { searchParams: Prom
         <div className="mx-auto grid max-w-7xl gap-8 sm:grid-cols-2 lg:grid-cols-4">
           <div>
             <p className="font-[family-name:var(--font-catalog-brand)] text-3xl">Belleezaa</p>
-            <p className="mt-2 text-sm text-[#e9e0e3]">Prendas para acompañarte cada día.</p>
+            <p className="mt-2 text-sm text-[#e9e0e3]">Somos tu mayorista de confianza</p>
           </div>
           <section aria-labelledby="catalog-social-title">
             <h2 id="catalog-social-title" className="text-sm font-semibold">Síguenos</h2>

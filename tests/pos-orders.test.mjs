@@ -69,7 +69,7 @@ async function fixture() {
     insert into inventory_product_prices values('${product}','divisas',10,8,3,'Tres por 24',90,false),('${product}','bolivares',12,9,3,'Tres por 27',100,false);
     insert into exchange_rates values(1,'USD','VES','${cashier}',(now() at time zone 'America/Caracas')::date,now(),40);
   `);
-  for (const name of ["20261123100000_sellers_orders.sql", "20261123120000_sellers_customer_fields.sql", "20261125100000_pos_orders_payments.sql", "20261125110000_pos_query_alias_fix.sql", "20261125120000_sellers_attention_channel.sql", "20261125130000_pos_order_deletion.sql", "20261125140000_admin_sales_dashboard.sql", "20261125150000_admin_weekly_commissions.sql", "20261125160000_admin_commission_processing.sql", "20261125170000_admin_commission_rate_10.sql", "20261125180000_admin_sales_date_range.sql", "20261125190000_admin_sales_range_periods.sql", "20261125200000_pos_order_available_stock.sql", "20261126100000_pos_transactions.sql"]) {
+  for (const name of ["20261123100000_sellers_orders.sql", "20261123120000_sellers_customer_fields.sql", "20261125100000_pos_orders_payments.sql", "20261125110000_pos_query_alias_fix.sql", "20261125120000_sellers_attention_channel.sql", "20261125130000_pos_order_deletion.sql", "20261125140000_admin_sales_dashboard.sql", "20261125150000_admin_weekly_commissions.sql", "20261125160000_admin_commission_processing.sql", "20261125170000_admin_commission_rate_10.sql", "20261125180000_admin_sales_date_range.sql", "20261125190000_admin_sales_range_periods.sql", "20261125200000_pos_order_available_stock.sql", "20261126100000_pos_transactions.sql", "20261126200000_order_reservation_45_minutes.sql", "20261126210000_seller_active_order_limit.sql"]) {
     await db.exec(await readFile(new URL(`../supabase/migrations/${name}`, import.meta.url), "utf8"));
   }
   await db.exec(`set test.actor = '${cashier}'; insert into seller_orders(id,seller_id,payment_method,total_usd,idempotency_key,request_hash,expires_at,customer_name,customer_id)
@@ -112,6 +112,8 @@ test("POS edita, recalcula por modalidad, exige referencia y cierra una sola vez
     assert.equal(current.items.find(item => item.kind === "variant").promotion_units, 3);
     assert.equal(current.advisor_name, "Asesor de prueba");
     assert.equal(current.customer_name, "Cliente Prueba");
+    const reservationSeconds = (Date.parse(current.expires_at) - Date.now()) / 1000;
+    assert.ok(reservationSeconds >= 2690 && reservationSeconds <= 2705, `Reserva renovada fuera de 45 minutos: ${reservationSeconds}`);
     await assert.rejects(save(db, 1), /Otra caja modifico/);
     current = await save(db, 2, "bolivares");
     assert.equal(current.total_usd, 127);
@@ -292,6 +294,24 @@ test("vendedor guarda canal y lo conserva en reintentos, caja y recibo", async (
     assert.equal(Number(afterPayment.total_usd),20);
     assert.equal(afterPayment.items[0].quantity,2);
     assert.equal(Number(afterPayment.items[0].total_usd),20);
+  } finally { await db.close(); }
+});
+
+test("cada vendedor puede mantener hasta tres ordenes vigentes al mismo tiempo", async () => {
+  const db = await fixture();
+  try {
+    await db.exec(`set test.actor = '${seller}'; set role authenticated`);
+    const input = JSON.stringify([{ kind: "variant", id: variant, quantity: 1 }]);
+    const create = async (key) => (await db.query("select * from public.sellers_create_order($1,'efectivo','Cliente Prueba','12345678',$2,'online')", [key, input])).rows[0];
+    const second = await create("00000000-0000-4000-8000-000000000020");
+    const third = await create("00000000-0000-4000-8000-000000000021");
+    assert.notEqual(second.order_id, third.order_id);
+    await assert.rejects(create("00000000-0000-4000-8000-000000000022"), /Ya tienes 3 ordenes activas/);
+    assert.equal((await create("00000000-0000-4000-8000-000000000020")).order_id, second.order_id);
+    await db.exec("reset role; update public.seller_orders set expires_at = clock_timestamp() - interval '1 second' where id = $1".replace("$1", `'${order}'`));
+    await db.exec(`set test.actor = '${seller}'; set role authenticated`);
+    const replacement = await create("00000000-0000-4000-8000-000000000022");
+    assert.ok(replacement.order_id);
   } finally { await db.close(); }
 });
 

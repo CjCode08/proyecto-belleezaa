@@ -55,7 +55,10 @@ export default async function StoreHomePage() {
       <a href="#contenido" className="sr-only focus:not-sr-only focus:absolute focus:z-50 focus:bg-white focus:p-3">Ir al contenido</a>
       <header className="border-b border-[#e8e6e1] bg-[#faf9f6]">
         <nav aria-label="Navegación principal" className="mx-auto flex min-h-16 max-w-7xl flex-wrap items-center justify-between gap-x-4 gap-y-2 px-4 py-2 sm:px-6 lg:px-8">
-          <Link href="/inicio" className="font-[family-name:var(--font-inicio-brand)] text-3xl text-[#b50638]">Belleezaa</Link>
+          <Link href="/inicio" className="inline-flex items-center gap-2 font-[family-name:var(--font-inicio-brand)] text-3xl text-[#b50638]">
+            <Image src="/faviconBelleezaa.png" alt="" width={36} height={36} priority className="size-9 rounded-full" />
+            Belleezaa
+          </Link>
           <div className="hidden flex-wrap items-center justify-end gap-2 text-sm font-semibold md:flex">
             <Link href="/catalogo" className="catalog-nav-link catalog-nav-link-current inline-flex min-h-11 items-center rounded-md px-3 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#b50638]">Catálogo</Link>
             <a href="#categorias" className="catalog-nav-link inline-flex min-h-11 items-center rounded-md px-3 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#b50638]">Categorías</a>
@@ -74,7 +77,7 @@ export default async function StoreHomePage() {
           <div className="mx-auto w-full max-w-7xl px-4 py-16 sm:px-6 lg:px-8">
             <h1 className="font-[family-name:var(--font-inicio-brand)] text-6xl leading-tight sm:text-7xl lg:text-8xl">Belleezaa</h1>
             <div aria-hidden="true" className="mt-4 h-1 w-16 bg-[#ffd9dd]" />
-            <p className="mt-4 max-w-md text-base leading-7 text-white sm:text-lg">Encuentra prendas para acompañarte cada día.</p>
+            <p className="mt-4 max-w-md text-base leading-7 text-white sm:text-lg">Prendas para vestir a toda tu familia</p>
             <div className="mt-8 flex flex-wrap gap-3">
               <Link href="/catalogo" className="inline-flex min-h-12 items-center justify-center gap-2 rounded-md bg-white px-5 text-sm font-semibold text-[#720429] transition-colors hover:bg-[#ffd9dd] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white">Explorar catálogo <ArrowRight size={17} aria-hidden="true" /></Link>
               <a href={contactUrl} target="_blank" rel="noopener noreferrer" className="inline-flex min-h-12 items-center justify-center gap-2 rounded-md border border-white px-5 text-sm font-semibold text-white transition-colors hover:bg-[#720429] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white"><MessageCircle size={17} aria-hidden="true" /> Hablar por WhatsApp</a>
@@ -102,7 +105,7 @@ export default async function StoreHomePage() {
         <section id="nosotros" className="scroll-mt-20 border-y border-[#e8e6e1] bg-white">
           <div className="mx-auto grid max-w-7xl gap-5 px-4 py-12 sm:px-6 md:grid-cols-[1fr_2fr] lg:px-8 lg:py-16">
             <div><p className="text-xs font-semibold uppercase text-[#b50638]">Conócenos</p><h2 className="mt-2 font-[family-name:var(--font-inicio-heading)] text-3xl font-semibold">Quiénes somos</h2></div>
-            <div className="max-w-2xl"><p className="text-base leading-7 text-[#5b4041]">Belleezaa, somos Boutique Chicas Intimas una tienda de ropa para mujeres, caballeros y niños en Valencia, Carabobo. Te acompañamos a elegir entre las opciones disponibles en nuestro catálogo.</p><a href={locationUrl} target="_blank" rel="noopener noreferrer" className="mt-5 inline-flex min-h-11 items-center gap-2 text-sm font-semibold text-[#92002a] hover:underline"><MapPin size={18} aria-hidden="true" /> Visítanos en Boutique Chicas Íntimas <ArrowRight size={16} aria-hidden="true" /></a></div>
+            <div className="max-w-2xl"><p className="text-base leading-7 text-[#5b4041]">Belleezaa, Somos Boutique Chicas Intimas tu mayorista de confianza y donde puedes conseguir las prendas para vestir a toda tu familia. Te acompañamos a elegir entre las opciones disponibles en nuestro catálogo.</p><a href={locationUrl} target="_blank" rel="noopener noreferrer" className="mt-5 inline-flex min-h-11 items-center gap-2 text-sm font-semibold text-[#92002a] hover:underline"><MapPin size={18} aria-hidden="true" /> Visítanos en Boutique Chicas Íntimas <ArrowRight size={16} aria-hidden="true" /></a></div>
           </div>
         </section>
 
@@ -120,7 +123,7 @@ export default async function StoreHomePage() {
 
       <footer className="bg-[#1e1a1c] px-4 py-10 text-white sm:px-6 lg:px-8">
         <div className="mx-auto grid max-w-7xl gap-8 sm:grid-cols-2 lg:grid-cols-3">
-          <div><p className="font-[family-name:var(--font-inicio-brand)] text-3xl">Belleezaa</p><p className="mt-2 text-sm text-[#e9e0e3]">Prendas para acompañarte cada día.</p></div>
+          <div><p className="font-[family-name:var(--font-inicio-brand)] text-3xl">Belleezaa</p><p className="mt-2 text-sm text-[#e9e0e3]">Somos tu mayorista de confianza</p></div>
           <div><h2 className="text-sm font-semibold">Síguenos</h2><div className="mt-3 flex flex-col items-start text-sm">
             <a href="https://www.instagram.com/bo.chicasintimas/" target="_blank" rel="noopener noreferrer" className="inline-flex min-h-11 items-center gap-2 hover:underline"><Camera size={17} aria-hidden="true" /> Instagram</a>
             <a href="https://www.tiktok.com/@bo.chicasintimas?_r=1&_t=ZS-9BXKSgJtj4n" target="_blank" rel="noopener noreferrer" className="inline-flex min-h-11 items-center gap-2 hover:underline"><Music2 size={17} aria-hidden="true" /> TikTok</a>

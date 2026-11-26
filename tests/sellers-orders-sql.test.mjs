@@ -5,6 +5,14 @@ import { test } from "node:test";
 const sql = readFileSync(new URL("../supabase/migrations/20261123100000_sellers_orders.sql", import.meta.url), "utf8");
 const returningFix = readFileSync(new URL("../supabase/migrations/20261123110000_sellers_order_returning_fix.sql", import.meta.url), "utf8");
 const customerFields = readFileSync(new URL("../supabase/migrations/20261123120000_sellers_customer_fields.sql", import.meta.url), "utf8");
+const reservation45 = readFileSync(new URL("../supabase/migrations/20261126200000_order_reservation_45_minutes.sql", import.meta.url), "utf8");
+
+test("las reservas nuevas y renovadas duran 45 minutos", () => {
+  assert.match(reservation45, /before insert or update of expires_at on public\.seller_orders/);
+  assert.match(reservation45, /clock_timestamp\(\) \+ interval '45 minutes'/);
+  assert.match(reservation45, /between clock_timestamp\(\) \+ interval '29 minutes'/);
+  assert.doesNotMatch(reservation45, /interval '45 minutes'.*update public\.seller_orders/s);
+});
 
 test("solo el vendedor activo crea y consulta sus propias órdenes", () => {
   assert.equal((sql.match(/p\.id = v_seller and p\.role = 'vendedor' and p\.is_active is true/g) ?? []).length, 2);

@@ -5,7 +5,7 @@ import { useRouter } from "next/navigation";
 import { RefreshCw } from "lucide-react";
 
 const channelNames = ["belleza:seller-orders-updated", "belleza:catalog-stock-updated"];
-const refreshIntervalMs = 5000;
+const refreshIntervalMs = 30000;
 
 export function RefreshSellerOrders({ manual = false }: { manual?: boolean }) {
   const router = useRouter();
