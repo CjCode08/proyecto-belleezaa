@@ -7,6 +7,7 @@ import { connection } from "next/server";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
 import { catalogPageHref } from "@/lib/catalog/search";
 import { parseCommercialProduct } from "@/lib/catalog/commercial";
+import { MobileNav } from "./mobile-nav";
 
 export const instant = false;
 export const metadata: Metadata = {
@@ -54,20 +55,20 @@ export default async function StoreHomePage() {
       <header className="border-b border-[#e8e6e1] bg-[#faf9f6]">
         <nav aria-label="Navegación principal" className="mx-auto flex min-h-16 max-w-7xl flex-wrap items-center justify-between gap-x-4 gap-y-2 px-4 py-2 sm:px-6 lg:px-8">
           <Link href="/inicio" className="font-[family-name:var(--font-inicio-brand)] text-3xl text-[#b50638]">Belleezaa</Link>
-          <div className="flex flex-wrap items-center justify-end gap-2 text-sm font-semibold">
+          <div className="hidden flex-wrap items-center justify-end gap-2 text-sm font-semibold md:flex">
             <Link href="/catalogo" className="catalog-nav-link catalog-nav-link-current inline-flex min-h-11 items-center rounded-md px-3 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#b50638]">Catálogo</Link>
             <a href="#categorias" className="catalog-nav-link inline-flex min-h-11 items-center rounded-md px-3 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#b50638]">Categorías</a>
             <a href="#nosotros" className="catalog-nav-link inline-flex min-h-11 items-center rounded-md px-3 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#b50638]">Nosotros</a>
             <a href={contactUrl} target="_blank" rel="noopener noreferrer" className="catalog-nav-link inline-flex min-h-11 items-center gap-2 rounded-md px-3 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#b50638]"><MessageCircle size={17} aria-hidden="true" /> Contacto</a>
           </div>
+          <MobileNav contactUrl={contactUrl} />
         </nav>
       </header>
 
       <main id="contenido">
         <section className="flex min-h-[400px] items-center border-b-8 border-[#720429] bg-[#a90c38] text-white sm:min-h-[440px]">
           <div className="mx-auto w-full max-w-7xl px-4 py-16 sm:px-6 lg:px-8">
-            <p className="text-sm font-semibold uppercase text-white">Nuestra tienda en Valencia</p>
-            <h1 className="mt-3 font-[family-name:var(--font-inicio-brand)] text-6xl leading-tight sm:text-7xl lg:text-8xl">Belleezaa</h1>
+            <h1 className="font-[family-name:var(--font-inicio-brand)] text-6xl leading-tight sm:text-7xl lg:text-8xl">Belleezaa</h1>
             <div aria-hidden="true" className="mt-4 h-1 w-16 bg-[#ffd9dd]" />
             <p className="mt-4 max-w-md text-base leading-7 text-white sm:text-lg">Encuentra prendas para acompañarte cada día.</p>
             <div className="mt-8 flex flex-wrap gap-3">
@@ -97,7 +98,7 @@ export default async function StoreHomePage() {
         <section id="nosotros" className="scroll-mt-20 border-y border-[#e8e6e1] bg-white">
           <div className="mx-auto grid max-w-7xl gap-5 px-4 py-12 sm:px-6 md:grid-cols-[1fr_2fr] lg:px-8 lg:py-16">
             <div><p className="text-xs font-semibold uppercase text-[#b50638]">Conócenos</p><h2 className="mt-2 font-[family-name:var(--font-inicio-heading)] text-3xl font-semibold">Quiénes somos</h2></div>
-            <div className="max-w-2xl"><p className="text-base leading-7 text-[#5b4041]">Somos Belleezaa, una tienda de prendas en Valencia, Carabobo. Te acompañamos a elegir entre las opciones disponibles en nuestro catálogo.</p><a href={locationUrl} target="_blank" rel="noopener noreferrer" className="mt-5 inline-flex min-h-11 items-center gap-2 text-sm font-semibold text-[#92002a] hover:underline"><MapPin size={18} aria-hidden="true" /> Visítanos en Boutique Chicas Íntimas <ArrowRight size={16} aria-hidden="true" /></a></div>
+            <div className="max-w-2xl"><p className="text-base leading-7 text-[#5b4041]">Belleezaa, somos Boutique Chicas Intimas una tienda de ropa para mujeres, caballeros y niños en Valencia, Carabobo. Te acompañamos a elegir entre las opciones disponibles en nuestro catálogo.</p><a href={locationUrl} target="_blank" rel="noopener noreferrer" className="mt-5 inline-flex min-h-11 items-center gap-2 text-sm font-semibold text-[#92002a] hover:underline"><MapPin size={18} aria-hidden="true" /> Visítanos en Boutique Chicas Íntimas <ArrowRight size={16} aria-hidden="true" /></a></div>
           </div>
         </section>
 

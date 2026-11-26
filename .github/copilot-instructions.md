@@ -8,7 +8,7 @@
 - Navegación del catálogo: la marca enlaza a `/inicio`; catálogo, búsqueda y carrito tienen accesos visibles e interactivos también en móvil.
 - La marca Belleezaa se muestra sin punto decorativo ni icono de brillo en la portada y el catálogo.
 - El favicon global usa `public/faviconBelleezaa.png`; todo módulo nuevo debe heredarlo sin reemplazarlo, salvo indicación del usuario.
-- Portada `/inicio`: hero temporal en tonos rojos con marca en Lobster y navegación interactiva compatible con los temas claro y oscuro; la imagen guardada queda disponible para revisión futura.
+- Portada `/inicio`: hero temporal en tonos rojos con marca en Lobster, menú de navegación móvil y enlaces visibles en escritorio; compatible con los temas claro y oscuro. Quiénes somos presenta Boutique Chicas Intimas y su oferta; la imagen guardada queda disponible para revisión futura.
 - El catálogo comercial se activa al desplegar; `CATALOG_MAINTENANCE=true` lo pausa. El usuario aprobó productos, precios y promociones; conservarlos sin cambios. El usuario confirmó la tasa del 17/11/2026 cargada. El checkout real público requiere configuración de Production antes de habilitarse.
 
 ## 1. Stack Tecnológico y Directrices Generales
