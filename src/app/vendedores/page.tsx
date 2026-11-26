@@ -10,6 +10,7 @@ import { parseCommercialProduct } from "@/lib/catalog/commercial";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
 import { OrdersPanel, type SellerOrder } from "./orders-panel";
 import { SellersCart } from "./sellers-cart";
+import { RefreshSellerOrders } from "./refresh-orders";
 
 const pageSize = 24;
 const lastPage = Math.floor(1000000 / pageSize) + 1;
@@ -68,6 +69,10 @@ export default async function SellersPage({ searchParams }: { searchParams: Prom
       ...order,
       customer_name: typeof order.customer_name === "string" ? order.customer_name : null,
       customer_id: typeof order.customer_id === "string" ? order.customer_id : null,
+      attention_channel: typeof order.attention_channel === "string" ? order.attention_channel : null,
+      deleted_at: typeof order.deleted_at === "string" ? order.deleted_at : null,
+      deleted_by_name: typeof order.deleted_by_name === "string" ? order.deleted_by_name : null,
+      deleted_by_role: typeof order.deleted_by_role === "string" ? order.deleted_by_role : null,
       items: Array.isArray(order.items) ? order.items as unknown as SellerOrder["items"] : [],
     }));
     catalogError = error;
@@ -79,6 +84,7 @@ export default async function SellersPage({ searchParams }: { searchParams: Prom
 
   return (
     <main className="seller-surface min-h-dvh bg-rose-50/30 text-slate-800">
+      {view !== "catalogo" && <RefreshSellerOrders />}
       <div className="mx-auto max-w-7xl px-4 py-6 sm:px-6 lg:px-8">
       <header className="flex flex-wrap items-center justify-between gap-4 rounded-2xl border border-rose-100 bg-white p-5 shadow-sm">
         <div>

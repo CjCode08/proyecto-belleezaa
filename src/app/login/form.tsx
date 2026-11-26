@@ -1,10 +1,10 @@
 "use client";
 
 import { useActionState } from "react";
-import { login, loginSeller } from "./actions";
+import { login, loginAdmin, loginPos, loginSeller } from "./actions";
 
-export function LoginForm({ sellers = false }: { sellers?: boolean }) {
-  const [state, action, pending] = useActionState(sellers ? loginSeller : login, {});
+export function LoginForm({ sellers = false, pos = false, administration = false }: { sellers?: boolean; pos?: boolean; administration?: boolean }) {
+  const [state, action, pending] = useActionState(administration ? loginAdmin : pos ? loginPos : sellers ? loginSeller : login, {});
 
   return (
     <form action={action} className="mt-6 space-y-4">

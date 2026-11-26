@@ -51,6 +51,9 @@ export default async function Home() {
               {profile.role === "admin" && <Link href="/inventario/tasa" className="rounded-xl border border-rose-200 px-4 py-2 text-sm font-semibold text-rose-700 hover:bg-rose-50">
                 Tasa de cambio
               </Link>}
+              {profile.role === "admin" && <Link href="/administracion" className="rounded-xl border border-rose-200 px-4 py-2 text-sm font-semibold text-rose-700 hover:bg-rose-50">
+                Administración
+              </Link>}
             </div>
           </div>
         </section>

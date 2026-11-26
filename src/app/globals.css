@@ -183,3 +183,11 @@ select:focus {
   outline: 2px solid #e11d48;
   outline-offset: 2px;
 }
+
+@media print {
+  body:has(.pos-receipt) { background: white; color: black; }
+  body:has(.pos-receipt) .theme-control-bar,
+  body:has(.pos-receipt) .pos-no-print { display: none !important; }
+  .pos-receipt { color: black; border-color: #999; }
+  .pos-receipt li { break-inside: avoid; }
+}

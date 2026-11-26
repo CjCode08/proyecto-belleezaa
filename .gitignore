@@ -16,6 +16,7 @@
 # next.js
 /.next/
 /.next-sellers/
+/.next-pos/
 /out/
 
 # production

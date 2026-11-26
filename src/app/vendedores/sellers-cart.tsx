@@ -6,13 +6,14 @@ import { ImageOff, Minus, Plus, ShoppingBag, Trash2, X } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { canAddCommercialQuantity, commercialTotal, parseCommercialCart, type CommercialItem, type CommercialProduct } from "@/lib/catalog/commercial";
 import { createSellerOrder } from "./orders-actions";
+import { isAttentionChannel, type AttentionChannel } from "@/lib/sellers/attention-channel";
 
 type Method = "bolivares" | "binance" | "efectivo";
-type Draft = { items: CommercialItem[]; method: Method; customerName: string; customerId: string };
+type Draft = { items: CommercialItem[]; method: Method; customerName: string; customerId: string; attentionChannel: AttentionChannel | "" };
 type PendingOrder = { key: string; payload: string };
 
 const methods = { bolivares: "Bol\u00edvares", binance: "Binance", efectivo: "Efectivo en divisas" };
-const initial: Draft = { items: [], method: "bolivares", customerName: "", customerId: "" };
+const initial: Draft = { items: [], method: "bolivares", customerName: "", customerId: "", attentionChannel: "" };
 const draftEvent = "belleza:sellers-draft";
 const actionStyle = "inline-flex min-h-11 min-w-11 items-center justify-center gap-2 rounded-xl border border-rose-200 px-2 text-sm font-medium text-rose-700 hover:bg-rose-50 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-rose-600 disabled:opacity-50";
 const primaryStyle = "inline-flex min-h-11 items-center justify-center gap-2 rounded-xl bg-rose-600 px-4 text-sm font-semibold text-white hover:bg-rose-700 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-rose-600 disabled:opacity-50";
@@ -29,6 +30,7 @@ function readDraft(raw: string | null): Draft {
       method,
       customerName: typeof stored.customerName === "string" ? stored.customerName.slice(0, 120) : "",
       customerId: typeof stored.customerId === "string" ? stored.customerId.replace(/[^0-9]/g, "").slice(0, 12) : "",
+      attentionChannel: isAttentionChannel(stored.attentionChannel) ? stored.attentionChannel : "",
     };
   } catch {
     return initial;
@@ -119,6 +121,11 @@ export function SellersCart({ sellerId, products, imageUrls, catalogUnavailable 
     setOrderError("");
     const customerName = draft.customerName.trim().replace(/\s+/g, " ");
     const customerId = draft.customerId.trim();
+    const attentionChannel = draft.attentionChannel;
+    if (!isAttentionChannel(attentionChannel)) {
+      setOrderError("Selecciona si el cliente esta siendo atendido online o en tienda.");
+      return;
+    }
     if (customerName.length < 3 || customerName.length > 120 || customerName.split(" ").length < 2) {
       setOrderError("Ingresa el nombre y apellido del cliente.");
       return;
@@ -131,6 +138,7 @@ export function SellersCart({ sellerId, products, imageUrls, catalogUnavailable 
       method: draft.method,
       customerName,
       customerId,
+      attentionChannel,
       items: draft.items.map(({ kind, selectionId, quantity }) => ({ kind, id: selectionId, quantity })),
     });
     let orderKey: PendingOrder;
@@ -142,13 +150,13 @@ export function SellersCart({ sellerId, products, imageUrls, catalogUnavailable 
         try { oldPayload = JSON.parse(stored.payload); } catch {}
         const oldHasCustomer = oldPayload && typeof oldPayload === "object"
           && "customerName" in oldPayload && "customerId" in oldPayload;
-        if (oldHasCustomer) {
+        const currentWithoutChannel = JSON.stringify({ method: draft.method, customerName, customerId, items: draft.items.map(({ kind, selectionId, quantity }) => ({ kind, id: selectionId, quantity })) });
+        const legacySameOrder = oldHasCustomer && oldPayload !== null && typeof oldPayload === "object" && !("attentionChannel" in oldPayload) && JSON.stringify(oldPayload) === currentWithoutChannel;
+        if (oldHasCustomer && !legacySameOrder) {
           setOrderError("Hay un envio anterior sin confirmar. Reintenta el mismo pedido sin cambiar prendas ni datos.");
           return;
         }
-        try { localStorage.removeItem(pendingKey); } catch {}
-        window.dispatchEvent(new Event(draftEvent));
-        orderKey = { key: crypto.randomUUID(), payload };
+        orderKey = { key: stored.key, payload };
       } else {
         orderKey = stored ?? { key: crypto.randomUUID(), payload };
       }
@@ -166,6 +174,7 @@ export function SellersCart({ sellerId, products, imageUrls, catalogUnavailable 
           method: draft.method,
           customerName,
           customerId,
+          attentionChannel,
           items: draft.items.map(({ kind, selectionId, quantity }) => ({ kind, id: selectionId, quantity })),
         });
         if (result.error || !result.orderId) {
@@ -178,7 +187,7 @@ export function SellersCart({ sellerId, products, imageUrls, catalogUnavailable 
         }
         try { localStorage.removeItem(pendingKey); } catch {}
         window.dispatchEvent(new Event(draftEvent));
-        save({ items: [], method: draft.method, customerName: draft.customerName, customerId: draft.customerId });
+        save({ items: [], method: draft.method, customerName: "", customerId: "", attentionChannel: "" });
         cart.current?.close();
         router.push("/vendedores?vista=creadas");
         router.refresh();
@@ -260,7 +269,6 @@ export function SellersCart({ sellerId, products, imageUrls, catalogUnavailable 
           <h2 id="seller-order" className="flex items-center gap-2 text-xl font-semibold"><ShoppingBag size={18} aria-hidden="true" /> Carrito</h2>
           <button type="button" title="Cerrar carrito" aria-label="Cerrar carrito" className={actionStyle} onClick={() => cart.current?.close()}><X size={18} aria-hidden="true" /></button>
         </div>
-        <label htmlFor="seller-method" className="mt-3 block text-sm font-medium">Forma de pago</label>
         <fieldset className="mt-4 grid gap-3 sm:grid-cols-2" disabled={isCreating}>
           <label htmlFor="seller-client-name" className="text-sm font-medium">Nombre y apellido
             <input id="seller-client-name" name="customerName" autoComplete="name" minLength={3} maxLength={120} required value={draft.customerName} onChange={(event) => save({ ...draft, customerName: event.target.value })} className="mt-1 min-h-11 w-full rounded-xl border border-slate-300 bg-white px-3 text-slate-900 outline-none focus:border-rose-500" />
@@ -268,7 +276,18 @@ export function SellersCart({ sellerId, products, imageUrls, catalogUnavailable 
           <label htmlFor="seller-client-id" className="text-sm font-medium">Cédula
             <input id="seller-client-id" name="customerId" inputMode="numeric" pattern="[0-9]{6,12}" minLength={6} maxLength={12} required value={draft.customerId} onChange={(event) => save({ ...draft, customerId: event.target.value.replace(/[^0-9]/g, "").slice(0, 12) })} className="mt-1 min-h-11 w-full rounded-xl border border-slate-300 bg-white px-3 text-slate-900 outline-none focus:border-rose-500" />
           </label>
+          <label htmlFor="seller-attention-channel" className="text-sm font-medium sm:col-span-2">Atenci&oacute;n del cliente
+            <select id="seller-attention-channel" name="attentionChannel" required value={draft.attentionChannel}
+              disabled={pendingOrder && Boolean(draft.attentionChannel)}
+              onChange={(event) => { if (isAttentionChannel(event.target.value)) save({ ...draft, attentionChannel: event.target.value }); }}
+              className="mt-1 min-h-11 w-full rounded-xl border border-slate-300 bg-white px-3 text-slate-900 outline-none focus:border-rose-500">
+              <option value="" disabled>Selecciona una opci&oacute;n</option>
+              <option value="online">Online</option>
+              <option value="tienda">En tienda</option>
+            </select>
+          </label>
         </fieldset>
+        <label htmlFor="seller-method" className="mt-4 block text-sm font-medium">Forma de pago</label>
         <select id="seller-method" className="mt-3 min-h-11 w-full rounded-xl border border-slate-300 bg-white px-3 text-slate-900 outline-none focus:border-rose-500" value={draft.method} disabled={raw === undefined || isCreating} onChange={(event) => save({ ...draft, method: checkedMethod(event.target.value) })}>
           {Object.entries(methods).map(([method, label]) => <option key={method} value={method}>{label}</option>)}
         </select>
@@ -297,7 +316,7 @@ export function SellersCart({ sellerId, products, imageUrls, catalogUnavailable 
         <p className="mt-3 text-sm" aria-live="polite">Total estimado (USD): <strong>{total === null ? "Sin precio para esta forma de pago" : usd.format(total / 100)}</strong></p>
         <p className="mt-2 text-xs text-[var(--seller-muted)]">Al crear la orden, las prendas se reservan durante 30 minutos. Caja confirmar&aacute; el pago.</p>
         {orderError && <p role="alert" className="mt-3 text-sm text-[var(--seller-accent)]">{orderError}</p>}
-          <button type="button" className={`${primaryStyle} mt-4 w-full`} disabled={!draft.items.length || total === null || isCreating || raw === undefined || draft.customerName.trim().split(/\s+/).length < 2 || !/^\d{6,12}$/.test(draft.customerId)} onClick={submitOrder}>{isCreating ? "Guardando orden..." : pendingOrder ? "Reintentar envio" : "Crear orden"}</button>
+          <button type="button" className={`${primaryStyle} mt-4 w-full`} disabled={!draft.items.length || total === null || isCreating || raw === undefined || draft.customerName.trim().split(/\s+/).length < 2 || !/^\d{6,12}$/.test(draft.customerId) || !isAttentionChannel(draft.attentionChannel)} onClick={submitOrder}>{isCreating ? "Guardando orden..." : pendingOrder ? "Reintentar envio" : "Crear orden"}</button>
         {backup && <p role="alert" className="mt-2 text-sm">No se pudo guardar en este dispositivo. El borrador se perder&aacute; al recargar.</p>}
       </dialog>
     </div>

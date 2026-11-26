@@ -3,12 +3,14 @@
 import { getActiveProfile } from "@/lib/auth/active-profile";
 import { staffDestination } from "@/lib/auth/staff-destination";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
+import { isAttentionChannel, type AttentionChannel } from "@/lib/sellers/attention-channel";
 
 type NewOrder = {
   key: string;
   method: "bolivares" | "binance" | "efectivo";
   customerName: string;
   customerId: string;
+  attentionChannel: AttentionChannel;
   items: { kind: "variant" | "bundle"; id: string; quantity: number }[];
 };
 
@@ -16,6 +18,7 @@ export type CreateSellerOrderResult = { error?: string; orderId?: string; reused
 
 export async function createSellerOrder(input: NewOrder): Promise<CreateSellerOrderResult> {
   if (!input || typeof input !== "object") return { error: "El pedido enviado no es valido." };
+  if (!isAttentionChannel(input.attentionChannel)) return { error: "Selecciona Online o En tienda.", retryable: false };
   if (process.env.SELLERS_PREVIEW_ENABLED !== "true") return { error: "La creacion de pedidos esta deshabilitada." };
   const profile = await getActiveProfile();
   if (staffDestination(profile, true) !== "/vendedores") return { error: "Inicia sesion como vendedor para crear un pedido." };
@@ -39,6 +42,7 @@ export async function createSellerOrder(input: NewOrder): Promise<CreateSellerOr
     p_payment_method: input.method,
     p_customer_name: customerName,
     p_customer_id: customerId,
+    p_attention_channel: input.attentionChannel,
     p_items: input.items,
   });
   if (error || !data?.[0]?.order_id) {

@@ -310,12 +310,33 @@ export type Database = {
         Returns: { product_id: string; image_url: string }[];
       };
       sellers_create_order: {
-        Args: { p_key: string; p_payment_method: string; p_customer_name: string; p_customer_id: string; p_items: Json };
+        Args: { p_key: string; p_payment_method: string; p_customer_name: string; p_customer_id: string; p_items: Json; p_attention_channel: string };
         Returns: { order_id: string; status: string; total_usd: number; total_ves: number | null; exchange_rate: number | null; rate_date: string | null; expires_at: string; reused: boolean }[];
       };
       sellers_list_orders: {
         Args: { p_status: string; p_offset: number };
-        Returns: { id: string; customer_name: string | null; customer_id: string | null; status: string; payment_method: string; total_usd: number; total_ves: number | null; exchange_rate: number | null; created_at: string; expires_at: string; items: Json }[];
+        Returns: { id: string; customer_name: string | null; customer_id: string | null; attention_channel: string | null; deleted_at: string | null; deleted_by_name: string | null; deleted_by_role: string | null; status: string; payment_method: string; total_usd: number; total_ves: number | null; exchange_rate: number | null; created_at: string; expires_at: string; items: Json }[];
+      };
+      pos_list_orders: { Args: { p_completed: boolean; p_search: string; p_offset: number }; Returns: Json };
+      pos_get_order: { Args: { p_order: string }; Returns: Json };
+      pos_catalog_products: { Args: { p_search: string; p_offset: number }; Returns: Json };
+      pos_catalog_products_for_order: { Args: { p_order: string; p_search: string; p_offset: number }; Returns: Json };
+      pos_order_availability: { Args: { p_order: string }; Returns: Json };
+      pos_save_order: { Args: { p_order: string; p_revision: number; p_currency: string; p_items: Json }; Returns: Json };
+      pos_close_order: {
+        Args: { p_order: string; p_revision: number; p_key: string; p_currency: string; p_method: string; p_reference: string; p_paid_on: string; p_comment: string; p_amount: number };
+        Returns: Json;
+      };
+      pos_delete_expired_order: { Args: { p_order: string; p_revision: number }; Returns: Json };
+      admin_sales_dashboard: { Args: { p_period: string; p_anchor: string }; Returns: Json };
+      admin_sales_dashboard_range: { Args: { p_period: string; p_range_start: string; p_range_end: string }; Returns: Json };
+      admin_weekly_commissions: { Args: { p_anchor: string }; Returns: Json };
+      admin_commission_pending: { Args: { p_range_start: string; p_range_end: string }; Returns: Json };
+      admin_process_commission: { Args: { p_seller_id: string; p_range_start: string; p_range_end: string }; Returns: Json };
+      admin_commission_processed: { Args: { p_offset: number }; Returns: Json };
+      inventory_update_product_pos_safe: {
+        Args: Database["public"]["Functions"]["inventory_update_product_commercial"]["Args"] & { p_stock_snapshot: Json };
+        Returns: string[];
       };
       catalog_filtered_products: {
         Args: { p_search: string; p_offset: number; p_audience: string; p_category: string };

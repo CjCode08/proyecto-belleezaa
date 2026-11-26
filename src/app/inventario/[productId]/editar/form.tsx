@@ -52,6 +52,10 @@ export function ProductEditForm({
       }
     }}>
       <input type="hidden" name="productId" value={product.id} />
+      <input type="hidden" name="stockSnapshot" value={JSON.stringify([
+        ...initialVariants.map(variant => ({ kind: "variant", id: variant.id, stock: variant.stock })),
+        ...bundles.map(bundle => ({ kind: "bundle", id: bundle.id, stock: bundle.stock })),
+      ])} />
       <section className="grid gap-4 rounded-2xl border border-rose-100 bg-white p-5 sm:grid-cols-2">
         <label className="text-sm font-medium">Nombre del producto
           <input name="name" required maxLength={120} value={name} onChange={(event) => setName(capitalizeInitial(event.target.value))} className={fieldClass} />

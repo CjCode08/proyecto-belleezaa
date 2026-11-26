@@ -1,4 +1,5 @@
 import { Clock3, CircleCheck, CircleX } from "lucide-react";
+import { attentionChannelLabel } from "@/lib/sellers/attention-channel";
 
 type OrderItem = {
   kind: "variant" | "bundle";
@@ -15,6 +16,10 @@ export type SellerOrder = {
   id: string;
   customer_name: string | null;
   customer_id: string | null;
+  attention_channel: string | null;
+  deleted_at: string | null;
+  deleted_by_name: string | null;
+  deleted_by_role: string | null;
   status: string;
   payment_method: string;
   total_usd: number;
@@ -34,6 +39,7 @@ const statusLabels: Record<string, string> = {
   expirada: "Reserva vencida",
   completada: "Completada",
   cancelada: "Cancelada",
+  eliminada: "Eliminada",
 };
 
 const methodLabels: Record<string, string> = {
@@ -56,10 +62,12 @@ export function OrdersPanel({ orders }: { orders: SellerOrder[] }) {
               <p className="font-mono text-sm font-semibold">ORD-{order.id.slice(0, 8).toUpperCase()}</p>
               {order.customer_name && <p className="mt-1 font-medium">{order.customer_name}</p>}
               {order.customer_id && <p className="text-xs text-[var(--seller-muted)]">Cédula: {order.customer_id}</p>}
+              <p className="mt-1 text-xs text-[var(--seller-muted)]">Atencion: {attentionChannelLabel(order.attention_channel)}</p>
+              {order.status === "eliminada" && <p className="mt-1 text-xs font-medium text-red-700">Eliminada por {order.deleted_by_role === "admin" ? "Administrador" : "Caja"}: {order.deleted_by_name ?? "Usuario desconocido"}{order.deleted_at ? ` · ${dateTime.format(new Date(order.deleted_at))}` : ""}</p>}
               <p className="mt-1 text-xs text-[var(--seller-muted)]">Creada el {dateTime.format(new Date(order.created_at))}</p>
             </div>
             <span className="inline-flex min-h-8 items-center gap-2 rounded-full border border-rose-100 bg-rose-50 px-3 text-xs font-semibold text-rose-700">
-              {order.status === "completada" ? <CircleCheck size={16} aria-hidden="true" /> : order.status === "expirada" || order.status === "cancelada" ? <CircleX size={16} aria-hidden="true" /> : <Clock3 size={16} aria-hidden="true" />}
+              {order.status === "completada" ? <CircleCheck size={16} aria-hidden="true" /> : order.status === "expirada" || order.status === "cancelada" || order.status === "eliminada" ? <CircleX size={16} aria-hidden="true" /> : <Clock3 size={16} aria-hidden="true" />}
               {statusLabels[order.status] ?? "Pendiente"}
             </span>
           </div>

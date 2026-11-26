@@ -7,6 +7,7 @@ import { removeInventoryImageObjects, uploadInventoryImages } from "@/lib/invent
 import { createSupabaseServerClient } from "@/lib/supabase/server";
 import { capitalizeInitial, validAudiences } from "@/lib/inventory/product-fields";
 import { parseCommercialForm } from "@/lib/inventory/commercial-form";
+import type { Database, Json } from "@/lib/supabase/types";
 
 export type InventoryActionState = { error?: string };
 
@@ -37,6 +38,13 @@ export async function updateProduct(
     return { error: "Revisa los datos del producto, precios, imágenes y comentario obligatorio." };
   }
   if ("error" in commercial) return { error: commercial.error };
+  let stockSnapshot: Json = [];
+  if (process.env.POS_PREVIEW_ENABLED === "true") {
+    try {
+      stockSnapshot = JSON.parse(text(formData.get("stockSnapshot"))) as Json;
+      if (!Array.isArray(stockSnapshot)) return { error: "Recarga el formulario para comprobar existencias." };
+    } catch { return { error: "Recarga el formulario para comprobar existencias." }; }
+  }
   const files = fileEntries.filter((file): file is File => file instanceof File && file.size > 0);
 
   const imageIds = formData.getAll("removeImageId").map((value) => text(value));
@@ -48,7 +56,7 @@ export async function updateProduct(
   const upload = await uploadInventoryImages(supabase, profile.id, productId, files);
   if ("error" in upload) return { error: upload.error };
 
-  const { data: removedPaths, error } = await supabase.rpc("inventory_update_product_commercial", {
+  const updateArgs: Database["public"]["Functions"]["inventory_update_product_commercial"]["Args"] = {
     p_product_id: productId,
     p_name: name,
     p_description: description,
@@ -61,7 +69,10 @@ export async function updateProduct(
     p_remove_image_ids: imageIds,
     p_comment: comment,
     p_audiences: selectedAudiences,
-  });
+  };
+  const { data: removedPaths, error } = process.env.POS_PREVIEW_ENABLED === "true"
+    ? await supabase.rpc("inventory_update_product_pos_safe", { ...updateArgs, p_stock_snapshot: stockSnapshot })
+    : await supabase.rpc("inventory_update_product_commercial", updateArgs);
   if (error || !removedPaths) {
     if (error) console.error(`Error al modificar el producto: ${JSON.stringify({
       code: error.code,
@@ -73,6 +84,8 @@ export async function updateProduct(
     const cleanupFailed = await removeInventoryImageObjects(supabase, upload.paths);
     return { error: cleanupFailed
       ? "No se pudo guardar la modificación y quedaron imágenes temporales pendientes de limpieza."
+      : error?.code === "40001" || error?.code === "P0002"
+        ? error.message
       : error?.code === "23505"
         ? "No se pudo guardar: comprueba que cada SKU sea único."
         : error?.code === "23503"
