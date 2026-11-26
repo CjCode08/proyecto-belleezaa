@@ -24,7 +24,7 @@ export default async function SellersPage({ searchParams }: { searchParams: Prom
   if (process.env.SELLERS_PREVIEW_ENABLED !== "true") notFound();
   await connection();
 
-  const profile = await getActiveProfile();
+  const profile = await getActiveProfile("sellers");
   const destination = staffDestination(profile, true);
   if (!profile || destination !== "/vendedores") redirect("/vendedores/login");
 
@@ -33,7 +33,7 @@ export default async function SellersPage({ searchParams }: { searchParams: Prom
   const search = typeof q === "string" ? q.trim().slice(0, 120) : "";
   const requestedPage = typeof pagina === "string" && /^\d+$/.test(pagina) ? Number(pagina) : 1;
   const page = Number.isSafeInteger(requestedPage) && requestedPage >= 1 && requestedPage <= lastPage ? requestedPage : 1;
-  const supabase = await createSupabaseServerClient();
+  const supabase = await createSupabaseServerClient("sellers");
   const imageUrls: Record<string, string> = {};
   let products = [] as ReturnType<typeof parseCommercialProduct>[];
   let orders: SellerOrder[] = [];

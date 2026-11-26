@@ -12,7 +12,7 @@ export type PosLine = {
 export type PosReceipt = {
   attention_channel?: string | null;
   id: string; customer_name: string | null; customer_id: string | null; advisor_name: string; cashier_name: string; items: PosLine[];
-  payment: { currency: PosCurrency; method: string; reference: string | null; paid_on: string; comment: string; amount: number; registered_at: string };
+  payment: { currency: PosCurrency; method: string; reference: string | null; paid_on: string; comment: string; amount: number; received_amount?: number; change_amount?: number; registered_at: string };
 };
 export type PosOrder = {
   attention_channel?: string | null;
@@ -23,8 +23,23 @@ export type PosOrder = {
 };
 export type PosSummary = Pick<PosOrder, "id" | "customer_name" | "customer_id" | "advisor_name" | "status" | "expires_at" | "created_at" | "total_usd" | "total_ves">;
 export type PosSelection = { kind: "variant" | "bundle"; id: string; quantity: number };
-export type PosPayment = { orderId: string; revision: number; key: string; currency: PosCurrency; method: string; reference: string; paidOn: string; comment: string; amount: number };
+export type PosPayment = { orderId: string; revision: number; key: string; currency: PosCurrency; method: string; reference: string; paidOn: string; comment: string; amount: number; receivedAmount?: number; excessConfirmed?: boolean };
 export type PosAvailability = Record<string, number>;
+
+export function posTender(received: string, total: number | null, method: string) {
+  if (!/^\d{1,10}(?:[.,]\d{1,2})?$/.test(received) || total === null || !Number.isFinite(total) || total < 0) return null;
+  const [whole, fraction = ""] = received.replace(",", ".").split(".");
+  const receivedCents = Number(whole) * 100 + Number(fraction.padEnd(2, "0"));
+  const totalCents = Math.round(total * 100);
+  if (!Number.isSafeInteger(receivedCents) || !Number.isSafeInteger(totalCents)) return null;
+  const differenceCents = receivedCents - totalCents;
+  return {
+    received: receivedCents / 100,
+    difference: differenceCents / 100,
+    change: method === "efectivo" ? Math.max(0, differenceCents) / 100 : 0,
+    sufficient: differenceCents >= 0,
+  };
+}
 
 export function posAvailabilityKey(kind: "variant" | "bundle", id: string) {
   return `${kind}:${id}`;
@@ -72,10 +87,13 @@ export function posReadError(error: { code: string; message: string }) {
 export function validPosPayment(payment: PosPayment, today: string) {
   if (!payment || typeof payment.reference !== "string" || typeof payment.comment !== "string" || typeof payment.paidOn !== "string") return false;
   const date = new Date(`${payment.paidOn}T12:00:00Z`);
+    const tender = typeof payment.receivedAmount === "number" ? posTender(String(payment.receivedAmount), payment.amount, payment.method) : null;
   return posMethods[payment.currency]?.some(method => method.value === payment.method) === true
     && (payment.method === "efectivo" || payment.reference.trim().length > 0)
     && payment.reference.length <= 120 && !/[\u0000-\u001f\u007f]/.test(payment.reference)
     && /^\d{4}-\d{2}-\d{2}$/.test(payment.paidOn) && payment.paidOn >= "1900-01-01" && payment.paidOn <= today
     && Number.isFinite(date.getTime()) && date.toISOString().slice(0,10) === payment.paidOn
-    && payment.comment.length <= 500 && Number.isFinite(payment.amount) && payment.amount >= 0;
+    && payment.comment.length <= 500 && Number.isFinite(payment.amount) && payment.amount >= 0
+    && (payment.receivedAmount === undefined || (tender?.sufficient === true
+      && (payment.method === "efectivo" || tender.difference === 0 || (payment.excessConfirmed === true && payment.comment.trim().length > 0))));
 }

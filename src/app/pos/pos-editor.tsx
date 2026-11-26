@@ -5,7 +5,7 @@ import { useEffect, useRef, useState, useSyncExternalStore, useTransition } from
 import { useRouter } from "next/navigation";
 import { Minus, Plus, Trash2, ReceiptText, Save, Search, X } from "lucide-react";
 import { availableCommercialQuantity, canAddCommercialQuantity, type CommercialProduct } from "@/lib/catalog/commercial";
-import { posAvailabilityKey, posMethods, posMoney, posReservationExpired, posSelection, validPosPayment, type PosAvailability, type PosCurrency, type PosLine, type PosOrder, type PosPayment } from "@/lib/pos/order";
+import { posAvailabilityKey, posMethods, posMoney, posReservationExpired, posSelection, posTender, validPosPayment, type PosAvailability, type PosCurrency, type PosLine, type PosOrder, type PosPayment } from "@/lib/pos/order";
 import { closePosOrder, deleteExpiredPosOrder, savePosOrder, searchPosSku } from "./actions";
 import { attentionChannelLabel } from "@/lib/sellers/attention-channel";
 
@@ -43,6 +43,8 @@ export function PosEditor({ order, availability, today, serverTime, returnHref }
   const [reference,setReference] = useState("");
   const [paidOn,setPaidOn] = useState(today);
   const [comment,setComment] = useState("");
+  const [received,setReceived] = useState("");
+  const [excessConfirmed,setExcessConfirmed] = useState(false);
   const [verified,setVerified] = useState(false);
   const [dirty,setDirty] = useState(false);
   const [message,setMessage] = useState("");
@@ -54,7 +56,14 @@ export function PosEditor({ order, availability, today, serverTime, returnHref }
   const savingLocked = pending || pendingPayment !== null || current.status !== "en_proceso";
   const locked = savingLocked || expired;
   const amount = currency === "bolivares" ? current.total_ves : current.total_usd;
+  const tender = posTender(received,amount,method);
+  const requiresExcessConfirmation = method !== "efectivo" && Boolean(tender && tender.difference > 0);
+  const excessReady = !requiresExcessConfirmation || (excessConfirmed && comment.trim().length > 0);
   const date = new Intl.DateTimeFormat("es-VE", { timeZone:"America/Caracas", dateStyle:"short",timeStyle:"short" });
+  const receiptQuery = new URLSearchParams(returnHref.split("?")[1] ?? "");
+  receiptQuery.delete("vista");
+  receiptQuery.delete("orden");
+  receiptQuery.set("origen", "recibos");
 
   useEffect(() => {
     if (!dialog.current?.open) dialog.current?.showModal();
@@ -162,8 +171,10 @@ export function PosEditor({ order, availability, today, serverTime, returnHref }
     try {
       payment = pendingPayment ? JSON.parse(pendingPayment) as PosPayment : {
         orderId:current.id,revision:current.revision,key:crypto.randomUUID(),currency,method,reference,paidOn,comment,amount:amount ?? -1,
+        receivedAmount:tender?.received,
+        excessConfirmed:requiresExcessConfirmation && excessConfirmed,
       };
-      if (!pendingPayment && (dirty || !verified || !validPosPayment(payment,today))) { setMessage("Guarda la revision y verifica el metodo, referencia, fecha e importe recibido."); return; }
+      if (!pendingPayment && (dirty || !verified || !tender?.sufficient || !validPosPayment(payment,today))) { setMessage("Guarda la revision y verifica el metodo, referencia, fecha e importe recibido."); return; }
       sessionStorage.setItem(storageKey,JSON.stringify(payment)); window.dispatchEvent(new Event(eventName));
     } catch { setMessage("No se pudo guardar la clave de reintento. No se envio el cobro."); return; }
     running.current = true; setMessage("");
@@ -199,10 +210,10 @@ export function PosEditor({ order, availability, today, serverTime, returnHref }
         <p className="mt-1 text-sm text-slate-600" aria-live="polite">{current.status === "completada" ? "Pagada" : expired ? "Inhabilitada: reserva vencida" : `Reserva hasta ${date.format(new Date(current.expires_at))}`} · Revision {current.revision}</p>
       </header>
       {expired && <div className="mt-4 flex flex-wrap items-center justify-between gap-3 border-b border-amber-200 pb-4"><div><p className="text-sm font-semibold text-amber-900">Reserva vencida</p><p className="text-sm text-amber-900">Habilita la orden para validar stock, actualizar precios y reservar nuevamente durante 30 minutos.</p></div><div className="flex flex-wrap gap-2"><button type="button" className={`${button} mt-3`} disabled={savingLocked || !lines.length} onClick={save}>Habilitar orden</button><button type="button" className="mt-3 inline-flex min-h-11 items-center gap-2 rounded-xl border border-red-200 px-3 text-sm font-semibold text-red-700 hover:bg-red-50 disabled:opacity-50" disabled={pending} onClick={deleteExpired}><Trash2 size={16} aria-hidden="true" /> Eliminar orden</button></div></div>}
-      {current.status === "completada" ? <Link className={`${button} mt-5`} href={`/pos/${current.id}/recibo`} prefetch={false}><ReceiptText size={18} aria-hidden="true" /> Ver recibo</Link> : <>
+      {current.status === "completada" ? <Link className={`${button} mt-5`} href={`/pos/${current.id}/recibo?${receiptQuery}`} prefetch={false}><ReceiptText size={18} aria-hidden="true" /> Ver recibo</Link> : <>
         <fieldset disabled={locked} className="mt-4">
           <legend className="text-sm font-semibold">Modalidad de la orden</legend>
-          <div className="mt-2 flex flex-wrap gap-4">{(["bolivares","divisas"] as const).map(value => <label key={value} className="flex min-h-11 items-center gap-2 text-sm"><input type="radio" name={`currency-${order.id}`} checked={currency===value} onChange={() => {setCurrency(value);setMethod("efectivo");setDirty(true);setVerified(false);}} />{value === "bolivares" ? "Pago en bolivares" : "Pago en divisas"}</label>)}</div>
+          <div className="mt-2 flex flex-wrap gap-4">{(["bolivares","divisas"] as const).map(value => <label key={value} className="flex min-h-11 items-center gap-2 text-sm"><input type="radio" name={`currency-${order.id}`} checked={currency===value} onChange={() => {setCurrency(value);setMethod("efectivo");setDirty(true);setVerified(false);setExcessConfirmed(false);}} />{value === "bolivares" ? "Pago en bolivares" : "Pago en divisas"}</label>)}</div>
         </fieldset>
         <ul className="divide-y divide-rose-100">{lines.map(line => <li key={`${line.kind}:${posSelection(line).id}`} className="py-4">
           <div className="flex flex-wrap justify-between gap-2"><div className="min-w-0"><p className="break-words font-semibold">{line.product_name}</p><p className="break-words text-sm text-slate-600">{line.kind === "variant" ? [line.size,line.color,line.sku || "Sin SKU"].join(" / ") : `Bulto de 12: ${line.bundle_description}`}</p></div><p className="text-sm tabular-nums">{dirty ? "Por recalcular" : posMoney(line.total_usd)}</p></div>
@@ -223,14 +234,24 @@ export function PosEditor({ order, availability, today, serverTime, returnHref }
         <div className="my-4 flex flex-wrap items-center justify-between gap-3"><p className="font-semibold tabular-nums" aria-live="polite">{dirty ? "Recalculo pendiente" : `Total: ${amount === null ? "Sin tasa" : posMoney(amount,currency)}`}</p>{!expired && <button className={button} disabled={savingLocked || !lines.length} onClick={save}><Save size={17} aria-hidden="true" /> Recalcular y guardar</button>}</div>
         <fieldset disabled={locked || dirty} className="space-y-3 border-t border-rose-100 pt-5">
           <legend className="text-lg font-semibold">Registrar cobro</legend>
-          <div className="grid gap-3 sm:grid-cols-2"><label className="text-sm">Forma de pago<select className={field} value={method} onChange={event => {setMethod(event.target.value);setVerified(false);}}>{posMethods[currency].map(option => <option key={option.value} value={option.value}>{option.label}</option>)}</select></label><label className="text-sm">Fecha de pago<input type="date" name="paidOn" value={paidOn} max={today} min="1900-01-01" className={field} onChange={event => setPaidOn(event.target.value)} /></label></div>
-          <label className="block text-sm">Referencia {method !== "efectivo" ? "(obligatoria)" : "(opcional)"}<input name="reference" maxLength={120} required={method !== "efectivo"} value={reference} className={field} onChange={event => setReference(event.target.value)} /></label>
-          <label className="block text-sm">Comentarios<textarea name="comment" maxLength={500} value={comment} className={`${field} py-2`} onChange={event => setComment(event.target.value)} /></label>
-          <label className="flex min-h-11 items-start gap-2 text-sm"><input type="checkbox" className="mt-1" checked={verified} onChange={event => setVerified(event.target.checked)} /><span>Pago verificado por {amount === null ? "importe no disponible" : posMoney(amount,currency)}. Registrar y descontar las prendas de esta orden.</span></label>
+          <div className="grid gap-3 sm:grid-cols-2"><label className="text-sm">Forma de pago<select className={field} value={method} onChange={event => {setMethod(event.target.value);setVerified(false);setExcessConfirmed(false);}}>{posMethods[currency].map(option => <option key={option.value} value={option.value}>{option.label}</option>)}</select></label><label className="text-sm">Fecha de pago<input type="date" name="paidOn" value={paidOn} max={today} min="1900-01-01" className={field} onChange={event => {setPaidOn(event.target.value);setVerified(false);}} /></label></div>
+          <div className="grid gap-3 sm:grid-cols-3">
+            <label htmlFor={`received-${order.id}`} className="text-sm font-medium">Monto recibido ({currency === "bolivares" ? "Bs." : "USD"})
+              <input id={`received-${order.id}`} name="received" type="text" inputMode="decimal" autoComplete="off" required maxLength={13} value={received} className={field} onChange={event => {setReceived(event.target.value);setVerified(false);setExcessConfirmed(false);}} />
+            </label>
+            <div className="text-sm font-medium"><span>Vuelto</span><output aria-label="Vuelto" className="mt-1 flex min-h-11 items-center rounded-xl border border-slate-300 px-3 tabular-nums">{tender ? posMoney(tender.change,currency) : "—"}</output></div>
+            <div className="text-sm font-medium"><span>Dif.</span><output aria-label="Diferencia entre monto recibido y total" className="mt-1 flex min-h-11 items-center rounded-xl border border-slate-300 px-3 tabular-nums">{tender ? `${tender.difference < 0 ? "-" : tender.difference > 0 ? "+" : ""}${posMoney(Math.abs(tender.difference),currency)}` : "—"}</output></div>
+          </div>
+          {received && !tender && <p role="status" className="text-sm text-red-700">Ingresa un monto válido con hasta dos decimales.</p>}
+          {tender && !tender.sufficient && <p role="status" className="text-sm text-red-700">El monto recibido es menor que el total.</p>}
+          <label className="block text-sm">Referencia {method !== "efectivo" ? "(obligatoria)" : "(opcional)"}<input name="reference" maxLength={120} required={method !== "efectivo"} value={reference} className={field} onChange={event => {setReference(event.target.value);setVerified(false);}} /></label>
+          <label className="block text-sm">Comentarios {requiresExcessConfirmation && "(obligatorio por diferencia)"}<textarea name="comment" maxLength={500} required={requiresExcessConfirmation} value={comment} className={`${field} py-2`} onChange={event => {setComment(event.target.value);setVerified(false);}} /></label>
+          {requiresExcessConfirmation && <label className="flex min-h-11 items-start gap-2 text-sm"><input type="checkbox" className="mt-1" checked={excessConfirmed} onChange={event => {setExcessConfirmed(event.target.checked);setVerified(false);}} /><span>Confirmo que el monto recibido es mayor al monto por cobrar.</span></label>}
+          <label className="flex min-h-11 items-start gap-2 text-sm"><input type="checkbox" className="mt-1" checked={verified} disabled={!tender?.sufficient || !excessReady} onChange={event => setVerified(event.target.checked)} /><span>Pago verificado por {amount === null ? "importe no disponible" : posMoney(amount,currency)}. Registrar y descontar las prendas de esta orden.</span></label>
         </fieldset>
       </>}
       {message && <p role="status" className="my-4 text-sm text-rose-700">{message}</p>}
-      {(current.status === "en_proceso" || pendingPayment) && <button className="mt-4 min-h-11 w-full rounded-xl bg-rose-600 px-4 text-sm font-semibold text-white hover:bg-rose-700 disabled:opacity-50" disabled={pending || (!pendingPayment && (expired || dirty || !verified || amount === null))} onClick={close}>{pending ? "Procesando..." : pendingPayment ? "Verificar cierre" : "Registrar pago y cerrar orden"}</button>}
+      {(current.status === "en_proceso" || pendingPayment) && <button className="mt-4 min-h-11 w-full rounded-xl bg-rose-600 px-4 text-sm font-semibold text-white hover:bg-rose-700 disabled:opacity-50" disabled={pending || (!pendingPayment && (expired || dirty || !verified || amount === null || !tender?.sufficient || !excessReady))} onClick={close}>{pending ? "Procesando..." : pendingPayment ? "Verificar cierre" : "Registrar pago y cerrar orden"}</button>}
     </dialog>
   );
 }

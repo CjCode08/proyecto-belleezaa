@@ -20,7 +20,7 @@ export async function createSellerOrder(input: NewOrder): Promise<CreateSellerOr
   if (!input || typeof input !== "object") return { error: "El pedido enviado no es valido." };
   if (!isAttentionChannel(input.attentionChannel)) return { error: "Selecciona Online o En tienda.", retryable: false };
   if (process.env.SELLERS_PREVIEW_ENABLED !== "true") return { error: "La creacion de pedidos esta deshabilitada." };
-  const profile = await getActiveProfile();
+  const profile = await getActiveProfile("sellers");
   if (staffDestination(profile, true) !== "/vendedores") return { error: "Inicia sesion como vendedor para crear un pedido." };
   const customerName = typeof input.customerName === "string" ? input.customerName.trim().replace(/\s+/g, " ") : "";
   const customerId = typeof input.customerId === "string" ? input.customerId.trim() : "";
@@ -36,7 +36,7 @@ export async function createSellerOrder(input: NewOrder): Promise<CreateSellerOr
     return { error: "Revisa los productos y las cantidades del carrito." };
   }
 
-  const supabase = await createSupabaseServerClient();
+  const supabase = await createSupabaseServerClient("sellers");
   const { data, error } = await supabase.rpc("sellers_create_order", {
     p_key: input.key,
     p_payment_method: input.method,

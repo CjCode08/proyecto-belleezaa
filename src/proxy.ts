@@ -2,6 +2,7 @@ import { createServerClient } from "@supabase/ssr";
 import { NextResponse, type NextRequest } from "next/server";
 import type { Database } from "@/lib/supabase/types";
 import { isStoreRoot } from "@/lib/catalog/store-domain";
+import { sessionCookieOptions, sessionScopeForPath } from "@/lib/supabase/session-scope";
 
 export async function proxy(request: NextRequest) {
   if (isStoreRoot(request.nextUrl.pathname, request.headers.get("host"))) {
@@ -14,6 +15,7 @@ export async function proxy(request: NextRequest) {
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
     process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
     {
+      cookieOptions: sessionCookieOptions(sessionScopeForPath(request.nextUrl.pathname), process.env.NEXT_PUBLIC_SUPABASE_URL!),
       cookies: {
         getAll: () => request.cookies.getAll(),
         setAll(cookiesToSet) {

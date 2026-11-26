@@ -187,6 +187,13 @@ export function SellersCart({ sellerId, products, imageUrls, catalogUnavailable 
         }
         try { localStorage.removeItem(pendingKey); } catch {}
         window.dispatchEvent(new Event(draftEvent));
+        try {
+          if (typeof BroadcastChannel !== "undefined") {
+            const channel = new BroadcastChannel("belleza:pos-orders-updated");
+            channel.postMessage({ type: "order-created" });
+            channel.close();
+          }
+        } catch {}
         save({ items: [], method: draft.method, customerName: "", customerId: "", attentionChannel: "" });
         cart.current?.close();
         router.push("/vendedores?vista=creadas");

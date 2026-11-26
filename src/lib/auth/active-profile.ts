@@ -1,7 +1,8 @@
 import { createSupabaseServerClient } from "@/lib/supabase/server";
+import type { SessionScope } from "@/lib/supabase/session-scope";
 
-export async function getActiveProfile() {
-  const supabase = await createSupabaseServerClient();
+export async function getActiveProfile(scope: SessionScope = "default") {
+  const supabase = await createSupabaseServerClient(scope);
   const { data: { user }, error: authError } = await supabase.auth.getUser();
   if (authError && authError.name !== "AuthSessionMissingError") {
     throw new Error("No se pudo verificar la sesión.", { cause: authError });

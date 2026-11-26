@@ -6,6 +6,7 @@ import { test } from "node:test";
 import { runInNewContext } from "node:vm";
 import config from "../next.config.ts";
 import { isStoreRoot } from "../src/lib/catalog/store-domain.ts";
+import { sessionCookieOptions, sessionScopeForPath } from "../src/lib/supabase/session-scope.ts";
 
 const require = createRequire(import.meta.url);
 globalThis.AsyncLocalStorage = AsyncLocalStorage;
@@ -15,6 +16,7 @@ const ts = require("typescript");
 
 function proxyWithSession(user = null) {
   let authCalls = 0;
+  let cookieOptions;
   const exports = {};
   const source = readFileSync(new URL("../src/proxy.ts", import.meta.url), "utf8");
   const compiled = ts.transpileModule(source, {
@@ -22,14 +24,15 @@ function proxyWithSession(user = null) {
   }).outputText;
   runInNewContext(compiled, {
     exports,
-    process,
+    process: { env: { ...process.env, NEXT_PUBLIC_SUPABASE_URL: "https://example.supabase.co" } },
     console,
     URL,
     require(id) {
       if (id === "@/lib/catalog/store-domain") return { isStoreRoot };
+      if (id === "@/lib/supabase/session-scope") return { sessionCookieOptions, sessionScopeForPath };
       if (id === "@supabase/ssr") {
         return {
-          createServerClient: (_url, _key, options) => ({
+          createServerClient: (_url, _key, options) => (cookieOptions = options.cookieOptions, {
             auth: {
               getUser: async () => {
                 authCalls++;
@@ -43,8 +46,16 @@ function proxyWithSession(user = null) {
       return require(id);
     },
   });
-  return { proxy: exports.proxy, authCalls: () => authCalls };
+  return { proxy: exports.proxy, authCalls: () => authCalls, cookieOptions: () => cookieOptions };
 }
+
+test("el proxy renueva la cookie correspondiente a cada modulo", async () => {
+  for (const [pathname, expected] of [["/pos", "sb-example-auth-token-pos"], ["/vendedores", "sb-example-auth-token-sellers"], ["/administracion", undefined]]) {
+    const { proxy, cookieOptions } = proxyWithSession({ id: "user" });
+    await proxy(new NextRequest(`https://localhost${pathname}`));
+    assert.equal(cookieOptions().name, expected);
+  }
+});
 
 async function redirectFor(host, path = "/") {
   const response = await unstable_getResponseFromNextConfig({

@@ -318,6 +318,19 @@ export type Database = {
         Returns: { id: string; customer_name: string | null; customer_id: string | null; attention_channel: string | null; deleted_at: string | null; deleted_by_name: string | null; deleted_by_role: string | null; status: string; payment_method: string; total_usd: number; total_ves: number | null; exchange_rate: number | null; created_at: string; expires_at: string; items: Json }[];
       };
       pos_list_orders: { Args: { p_completed: boolean; p_search: string; p_offset: number }; Returns: Json };
+      pos_list_receipts_filtered: { Args: { p_search: string; p_from: string | null; p_to: string | null; p_currency: string | null; p_offset: number }; Returns: Json };
+      pos_list_transactions: {
+        Args: { p_from: string | null; p_to: string | null; p_offset: number };
+        Returns: { receipt_id: string; order_id: string; paid_on: string; currency: string; method: string; amount: number; reference: string | null; comment: string; registered_at: string }[];
+      };
+      pos_list_money_movements: {
+        Args: { p_from: string | null; p_to: string | null; p_offset: number };
+        Returns: { movement_type: string; receipt_id: string; order_id: string; paid_on: string; currency: string; method: string; amount: number | null; reference: string | null; comment: string; registered_at: string }[];
+      };
+      pos_list_money_movements_filtered: {
+        Args: { p_from: string | null; p_to: string | null; p_currency: string | null; p_offset: number };
+        Returns: { movement_type: string; receipt_id: string; order_id: string; paid_on: string; currency: string; method: string; amount: number | null; reference: string | null; comment: string; registered_at: string }[];
+      };
       pos_get_order: { Args: { p_order: string }; Returns: Json };
       pos_catalog_products: { Args: { p_search: string; p_offset: number }; Returns: Json };
       pos_catalog_products_for_order: { Args: { p_order: string; p_search: string; p_offset: number }; Returns: Json };
@@ -325,6 +338,14 @@ export type Database = {
       pos_save_order: { Args: { p_order: string; p_revision: number; p_currency: string; p_items: Json }; Returns: Json };
       pos_close_order: {
         Args: { p_order: string; p_revision: number; p_key: string; p_currency: string; p_method: string; p_reference: string; p_paid_on: string; p_comment: string; p_amount: number };
+        Returns: Json;
+      };
+      pos_close_order_with_tender: {
+        Args: { p_order: string; p_revision: number; p_key: string; p_currency: string; p_method: string; p_reference: string; p_paid_on: string; p_comment: string; p_amount: number; p_received: number | null };
+        Returns: Json;
+      };
+      pos_close_order_with_excess: {
+        Args: { p_order: string; p_revision: number; p_key: string; p_currency: string; p_method: string; p_reference: string; p_paid_on: string; p_comment: string; p_amount: number; p_received: number | null; p_excess_confirmed: boolean };
         Returns: Json;
       };
       pos_delete_expired_order: { Args: { p_order: string; p_revision: number }; Returns: Json };

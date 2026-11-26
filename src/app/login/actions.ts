@@ -4,6 +4,7 @@ import { notFound, redirect } from "next/navigation";
 import { canAccessAdministration, canAccessPos, staffDestination } from "@/lib/auth/staff-destination";
 import { usernameToInternalEmail } from "@/lib/auth/username";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
+import type { SessionScope } from "@/lib/supabase/session-scope";
 
 export type LoginState = { error?: string };
 
@@ -33,7 +34,8 @@ async function signIn(formData: FormData, portal: "/inventario/panel" | "/vended
     return { error: "Ingresa un usuario y contraseña válidos." };
   }
 
-  const supabase = await createSupabaseServerClient();
+  const scope: SessionScope = portal === "/pos" ? "pos" : portal === "/vendedores" ? "sellers" : "default";
+  const supabase = await createSupabaseServerClient(scope);
   const { data, error } = await supabase.auth.signInWithPassword({ email, password });
   if (error || !data.user) {
     if (error && error.status !== 400 && error.status !== 422) {
@@ -51,7 +53,7 @@ async function signIn(formData: FormData, portal: "/inventario/panel" | "/vended
 
   if (profileError) {
     console.error("Error al consultar el perfil:", profileError);
-    const { error: signOutError } = await supabase.auth.signOut();
+    const { error: signOutError } = await supabase.auth.signOut({ scope: "local" });
     if (signOutError) console.error("Error al cerrar la sesión:", signOutError);
     return { error: "No se pudo verificar el acceso. Inténtalo más tarde." };
   }
@@ -62,7 +64,7 @@ async function signIn(formData: FormData, portal: "/inventario/panel" | "/vended
       ? canAccessAdministration(profile) ? "/administracion" : null
       : staffDestination(profile, process.env.SELLERS_PREVIEW_ENABLED === "true");
   if (destination !== portal || !profile?.username || usernameToInternalEmail(profile.username) !== email) {
-    const { error: signOutError } = await supabase.auth.signOut();
+    const { error: signOutError } = await supabase.auth.signOut({ scope: "local" });
     if (signOutError) console.error("Error al cerrar la sesión:", signOutError);
     return { error: "La cuenta no tiene acceso. Contacta al administrador." };
   }
@@ -75,20 +77,20 @@ export async function logout() {
 }
 
 export async function logoutSeller() {
-  await signOut("/vendedores/login");
+  await signOut("/vendedores/login", "sellers");
 }
 
 export async function logoutPos() {
-  await signOut("/pos/login");
+  await signOut("/pos/login", "pos");
 }
 
 export async function logoutAdmin() {
   await signOut("/administracion/login");
 }
 
-async function signOut(destination: string) {
-  const supabase = await createSupabaseServerClient();
-  const { error } = await supabase.auth.signOut();
+async function signOut(destination: string, scope: SessionScope = "default") {
+  const supabase = await createSupabaseServerClient(scope);
+  const { error } = await supabase.auth.signOut({ scope: "local" });
   if (error) {
     console.error("Error al cerrar la sesión:", error);
     throw new Error("No se pudo cerrar la sesión.");
