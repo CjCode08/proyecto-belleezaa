@@ -111,6 +111,10 @@
   color: var(--foreground);
 }
 
+@media (max-width: 767px) {
+  body:has(.inicio-page) > .theme-control-bar { display: none; }
+}
+
 .theme-toggle {
   border-color: var(--surface-border);
   background-color: var(--surface-card);

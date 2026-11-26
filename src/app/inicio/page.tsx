@@ -7,6 +7,7 @@ import { connection } from "next/server";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
 import { catalogPageHref } from "@/lib/catalog/search";
 import { parseCommercialProduct } from "@/lib/catalog/commercial";
+import { ThemeToggle } from "../theme-toggle";
 import { MobileNav } from "./mobile-nav";
 
 export const instant = false;
@@ -50,7 +51,7 @@ export default async function StoreHomePage() {
     return path ? imageUrls.get(path) : undefined;
   };
   return (
-    <div className={`${lobster.variable} ${outfit.variable} ${jakarta.variable} bg-[#faf9f6] font-[family-name:var(--font-inicio-body)] text-[#1e1a1c]`}>
+    <div className={`inicio-page ${lobster.variable} ${outfit.variable} ${jakarta.variable} bg-[#faf9f6] font-[family-name:var(--font-inicio-body)] text-[#1e1a1c]`}>
       <a href="#contenido" className="sr-only focus:not-sr-only focus:absolute focus:z-50 focus:bg-white focus:p-3">Ir al contenido</a>
       <header className="border-b border-[#e8e6e1] bg-[#faf9f6]">
         <nav aria-label="Navegación principal" className="mx-auto flex min-h-16 max-w-7xl flex-wrap items-center justify-between gap-x-4 gap-y-2 px-4 py-2 sm:px-6 lg:px-8">
@@ -61,7 +62,10 @@ export default async function StoreHomePage() {
             <a href="#nosotros" className="catalog-nav-link inline-flex min-h-11 items-center rounded-md px-3 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#b50638]">Nosotros</a>
             <a href={contactUrl} target="_blank" rel="noopener noreferrer" className="catalog-nav-link inline-flex min-h-11 items-center gap-2 rounded-md px-3 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#b50638]"><MessageCircle size={17} aria-hidden="true" /> Contacto</a>
           </div>
-          <MobileNav contactUrl={contactUrl} />
+          <div className="flex items-center gap-2 md:hidden">
+            <ThemeToggle />
+            <MobileNav contactUrl={contactUrl} />
+          </div>
         </nav>
       </header>
 
