@@ -235,18 +235,18 @@ export default async function AdministrationPage({
               </div>
 
               <div className="min-w-0 border-t-2 border-emerald-700 bg-white p-4 sm:p-5">
-                <div className="flex flex-wrap items-baseline justify-between gap-2">
+                <div className="flex flex-wrap items-baseline justify-between gap-1 sm:gap-2">
                   <h2 className="text-lg font-semibold">Vendedores</h2>
-                  <span className="text-sm text-slate-600">Mayor venta: {report.sellers[0]?.seller_name ?? "Sin ventas"}</span>
+                  <span className="text-sm text-slate-600">Mejor en ventas: {report.sellers[0] ? <>{report.sellers[0].seller_name} · {chartUsd.format(report.sellers[0].usd_equivalent)}</> : "Sin ventas"}</span>
                 </div>
-                <div className="mt-4 overflow-x-auto">
-                  <table className="w-full min-w-[560px] text-left text-sm">
+                <div className="mt-3 overflow-x-auto">
+                  <table className="w-full min-w-[500px] text-left text-sm">
                     <caption className="sr-only">Ranking de vendedores en el periodo</caption>
-                    <thead><tr className="border-b border-slate-200 text-xs text-slate-600"><th className="py-2 pr-3">Vendedor</th><th className="py-2 pr-3">Ventas</th><th className="py-2 pr-3">Prendas</th><th className="py-2 pr-3">Bultos</th><th className="py-2 text-right">USD eq.</th></tr></thead>
+                    <thead><tr className="border-b border-slate-200 text-xs text-slate-600"><th className="py-2 pr-2">Vendedor</th><th className="py-2 pr-2">Ventas</th><th className="py-2 pr-2">Prendas</th><th className="py-2 pr-2">Bultos</th><th className="py-2 text-right">USD</th></tr></thead>
                     <tbody>
                       {report.sellers.map((seller, index) => <tr key={seller.seller_id} className="border-b border-slate-100">
-                        <td className="py-3 pr-3"><span className="mr-2 font-mono text-xs text-slate-500">{String(index + 1).padStart(2, "0")}</span><span className="font-medium">{seller.seller_name}</span><span className="block pl-8 text-xs text-slate-500">{seller.seller_username}</span></td>
-                        <td className="py-3 pr-3 tabular-nums">{seller.receipt_count}</td><td className="py-3 pr-3 tabular-nums">{seller.units_sold}</td><td className="py-3 pr-3 tabular-nums">{seller.bundles_sold}</td><td className="py-3 text-right font-semibold tabular-nums">{usd.format(seller.usd_equivalent)}</td>
+                        <td className="py-2 pr-2"><span className="mr-1 font-mono text-xs text-slate-500">{String(index + 1).padStart(2, "0")}</span><span className="font-medium">{seller.seller_name}</span><span className="block pl-6 text-xs text-slate-500">{seller.seller_username}</span></td>
+                        <td className="py-2 pr-2 tabular-nums">{seller.receipt_count}</td><td className="py-2 pr-2 tabular-nums">{seller.units_sold}</td><td className="py-2 pr-2 tabular-nums">{seller.bundles_sold}</td><td className="py-2 text-right font-semibold tabular-nums">{chartUsd.format(seller.usd_equivalent)}</td>
                       </tr>)}
                     </tbody>
                   </table>
@@ -256,14 +256,14 @@ export default async function AdministrationPage({
             </section>
 
             <section className="mt-6 border-t-2 border-slate-700 bg-white p-4 sm:p-5">
-              <div className="flex flex-wrap items-baseline justify-between gap-2">
+              <div className="flex flex-wrap items-baseline justify-between gap-1 sm:gap-2">
                 <div><h2 className="text-lg font-semibold">Prendas y productos vendidos</h2><p className="mt-1 text-sm text-slate-600">Ordenados por aporte al equivalente en USD</p></div>
               </div>
-              <div className="mt-4 overflow-x-auto">
-                <table className="w-full min-w-[560px] text-left text-sm">
+              <div className="mt-3 overflow-x-auto">
+                <table className="w-full min-w-[500px] text-left text-sm">
                   <caption className="sr-only">Resumen de productos vendidos en el periodo</caption>
-                  <thead><tr className="border-b border-slate-200 text-xs text-slate-600"><th className="py-2 pr-3">Producto</th><th className="py-2 pr-3">Operaciones</th><th className="py-2 pr-3">Prendas</th><th className="py-2 pr-3">Bultos</th><th className="py-2 text-right">USD eq.</th></tr></thead>
-                  <tbody>{report.products.map((product) => <tr key={product.product_id} className="border-b border-slate-100"><td className="py-3 pr-3 font-medium">{product.product_name}</td><td className="py-3 pr-3 tabular-nums">{product.receipt_count}</td><td className="py-3 pr-3 tabular-nums">{product.units_sold}</td><td className="py-3 pr-3 tabular-nums">{product.bundles_sold}</td><td className="py-3 text-right font-semibold tabular-nums">{usd.format(product.usd_equivalent)}</td></tr>)}</tbody>
+                  <thead><tr className="border-b border-slate-200 text-xs text-slate-600"><th className="py-2 pr-2">Producto</th><th className="py-2 pr-2">Operaciones</th><th className="py-2 pr-2">Prendas</th><th className="py-2 pr-2">Bultos</th><th className="py-2 text-right">USD</th></tr></thead>
+                  <tbody>{report.products.map((product) => <tr key={product.product_id} className="border-b border-slate-100"><td className="py-2 pr-2 font-medium">{product.product_name}</td><td className="py-2 pr-2 tabular-nums">{product.receipt_count}</td><td className="py-2 pr-2 tabular-nums">{product.units_sold}</td><td className="py-2 pr-2 tabular-nums">{product.bundles_sold}</td><td className="py-2 text-right font-semibold tabular-nums">{chartUsd.format(product.usd_equivalent)}</td></tr>)}</tbody>
                 </table>
                 {!report.products.length && <p className="py-6 text-sm text-slate-600">Sin productos vendidos en este periodo.</p>}
               </div>
