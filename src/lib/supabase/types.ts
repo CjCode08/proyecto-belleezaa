@@ -329,7 +329,7 @@ export type Database = {
       };
       pos_list_money_movements_filtered: {
         Args: { p_from: string | null; p_to: string | null; p_currency: string | null; p_offset: number };
-        Returns: { movement_type: string; receipt_id: string; order_id: string; paid_on: string; currency: string; method: string; amount: number | null; reference: string | null; comment: string; registered_at: string }[];
+        Returns: { movement_type: string; receipt_id: string; order_id: string; paid_on: string; currency: string; method: string; amount: number | null; reference: string | null; comment: string; registered_at: string; cashier_name: string | null; cashier_username: string | null }[];
       };
       pos_get_order: { Args: { p_order: string }; Returns: Json };
       pos_catalog_products: { Args: { p_search: string; p_offset: number }; Returns: Json };

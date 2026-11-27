@@ -561,10 +561,10 @@ test("Transacciones muestra cada cobro en una fila con filtros y enlace al recib
   const exports = {};
   let query;
   const data = [
-    { movement_type: "ingreso", receipt_id: "abcdef12-0000-4000-8000-000000000001", order_id: order, paid_on: "2026-11-25", currency: "bolivares", method: "efectivo", amount: 5100, reference: "REF-123", comment: "Pago confirmado" },
-    { movement_type: "vuelto", receipt_id: "abcdef12-0000-4000-8000-000000000001", order_id: order, paid_on: "2026-11-25", currency: "bolivares", method: "efectivo", amount: 20, reference: "REF-123", comment: "Pago confirmado" },
-    { movement_type: "ingreso", receipt_id: "abcdef34-0000-4000-8000-000000000002", order_id: product, paid_on: "2026-11-24", currency: "divisas", method: "efectivo", amount: null, reference: null, comment: "" },
-    { movement_type: "ingreso", receipt_id: "abcdef56-0000-4000-8000-000000000003", order_id: variant, paid_on: "2026-11-24", currency: "divisas", method: "binance", amount: 10, reference: "REF-USD", comment: "" },
+    { movement_type: "ingreso", receipt_id: "abcdef12-0000-4000-8000-000000000001", order_id: order, paid_on: "2026-11-25", currency: "bolivares", method: "efectivo", amount: 5100, reference: "REF-123", comment: "Pago confirmado", cashier_name: "Caja Uno", cashier_username: "caja01" },
+    { movement_type: "vuelto", receipt_id: "abcdef12-0000-4000-8000-000000000001", order_id: order, paid_on: "2026-11-25", currency: "bolivares", method: "efectivo", amount: 20, reference: "REF-123", comment: "Pago confirmado", cashier_name: "Caja Uno", cashier_username: "caja01" },
+    { movement_type: "ingreso", receipt_id: "abcdef34-0000-4000-8000-000000000002", order_id: product, paid_on: "2026-11-24", currency: "divisas", method: "efectivo", amount: null, reference: null, comment: "", cashier_name: "Caja Dos", cashier_username: "caja02" },
+    { movement_type: "ingreso", receipt_id: "abcdef56-0000-4000-8000-000000000003", order_id: variant, paid_on: "2026-11-24", currency: "divisas", method: "binance", amount: 10, reference: "REF-USD", comment: "", cashier_name: null, cashier_username: null },
   ];
   runInNewContext(compiled, {
     exports, URLSearchParams, console,
@@ -590,7 +590,12 @@ test("Transacciones muestra cada cobro en una fila con filtros y enlace al recib
   assert.equal(query.args.p_currency,"bolivares");
   assert.match(html,/Moneda de pago/);
   assert.match(html,/<table/);
-  for (const heading of ["Fecha de pago", "Movimiento", "Modalidad", "Forma de pago", "Monto", "Referencia", "Recibo", "Comentarios"]) assert.ok(html.includes(`>${heading}</th>`));
+  for (const heading of ["Fecha de pago", "Movimiento", "Usuario de caja", "Modalidad", "Forma de pago", "Monto", "Referencia", "Recibo", "Comentarios"]) assert.ok(html.includes(`>${heading}</th>`));
+  assert.equal((html.match(/caja01/g) ?? []).length, 2);
+  assert.ok(html.includes("caja02"));
+  assert.ok(html.includes("Nombre no disponible"));
+  assert.ok(html.includes("Usuario no disponible"));
+  assert.ok(!html.includes("Falta aplicar la migración de usuario de Caja"));
   assert.equal((html.match(/<tr/g) ?? []).length,5);
   assert.ok(html.includes("REF-123"));
   assert.ok(html.includes("Pago confirmado"));
@@ -602,6 +607,9 @@ test("Transacciones muestra cada cobro en una fila con filtros y enlace al recib
   assert.ok(html.includes("Salida · vuelto"));
   assert.ok(html.includes("No registrado"));
   assert.ok(html.includes(`/pos/${order}/recibo?origen=transacciones&amp;desde=2026-11-01&amp;hasta=2026-11-30&amp;moneda=bolivares`));
+  delete data[0].cashier_username;
+  const oldDatabaseHtml = renderToStaticMarkup(await exports.default({ searchParams: Promise.resolve({}) }));
+  assert.ok(oldDatabaseHtml.includes("Falta aplicar la migración de usuario de Caja"));
 });
 
 test("Recibos consulta fecha y moneda y conserva los filtros en la orden abierta", async () => {
@@ -789,6 +797,54 @@ test("el formulario solicita monto recibido y conserva la verificación de pago"
   assert.ok(completed.includes(`/pos/${order}/recibo?q=Cliente&amp;pagina=2&amp;desde=2026-11-01&amp;hasta=2026-11-30&amp;moneda=divisas&amp;origen=recibos`));
 });
 
+test("al navegar al recibo o desmontar la orden se cierra el diálogo modal", async () => {
+  const require = createRequire(import.meta.url);
+  const React = require("react");
+  const ts = require("typescript");
+  const source = await readFile(new URL("../src/app/pos/pos-editor.tsx", import.meta.url), "utf8");
+  const compiled = ts.transpileModule(source, { compilerOptions: { module: ts.ModuleKind.CommonJS, jsx: ts.JsxEmit.ReactJSX } }).outputText;
+  let closed = 0;
+  let cleanup;
+  const dialog = { open: false, showModal() { this.open = true; }, close() { this.open = false; closed++; } };
+  let refIndex = 0;
+  const hooks = { ...React, useState: initial => [initial, () => {}], useEffect: effect => { cleanup = effect(); }, useRef: () => ({ current: refIndex++ === 0 ? dialog : false }), useSyncExternalStore: () => null, useTransition: () => [false, () => {}] };
+  const exports = {};
+  runInNewContext(compiled, {
+    exports, console, URLSearchParams, window: { setInterval: () => 1, clearInterval: () => {} },
+    require(id) {
+      if (id === "react") return hooks;
+      if (id === "next/link") return { __esModule: true, default: "a" };
+      if (id === "next/navigation") return { useRouter: () => ({}) };
+      if (id === "lucide-react") return Object.fromEntries(["Minus", "Plus", "Trash2", "ReceiptText", "Save", "Search", "X"].map(name => [name, () => null]));
+      if (id === "@/lib/catalog/commercial") return commercial;
+      if (id === "@/lib/pos/order") return posOrder;
+      if (id === "./actions") return {};
+      if (id === "@/lib/sellers/attention-channel") return { attentionChannelLabel: () => "En tienda" };
+      return require(id);
+    },
+  });
+  const currentOrder = { id: order, revision: 1, items: [], status: "completada", payment_method: "efectivo", total_usd: 10, total_ves: null, expires_at: "2026-11-26T15:00:00Z", customer_name: "Cliente", customer_id: "12345678", advisor_name: "Vendedor" };
+  const tree = exports.PosEditor({ order: currentOrder, availability: {}, today: "2026-11-26", serverTime: "2026-11-26T14:00:00Z", returnHref: "/pos?vista=recibos" });
+  function findReceipt(element) {
+    if (!element || typeof element !== "object") return null;
+    if (element.props?.href?.includes("/recibo?")) return element;
+    for (const child of React.Children.toArray(element.props?.children)) {
+      const found = findReceipt(child);
+      if (found) return found;
+    }
+    return null;
+  }
+  assert.equal(dialog.open, true);
+  const link = findReceipt(tree);
+  assert.ok(link);
+  link.props.onNavigate();
+  assert.equal(dialog.open, false);
+  dialog.showModal();
+  cleanup();
+  assert.equal(dialog.open, false);
+  assert.equal(closed, 2);
+});
+
 test("el formulario exige comentario y confirmación adicionales para excedentes electrónicos", async () => {
   const require = createRequire(import.meta.url);
   const React = require("react");
@@ -934,14 +990,16 @@ test("recibos y movimientos filtran fecha y moneda antes de paginar", async () =
   const secondKey = "00000000-0000-4000-8000-000000000013";
   try {
     await save(db,1,"bolivares");
-    for (const migration of ["20261126110000_pos_payment_tender.sql", "20261126120000_pos_excess_and_cash_movements.sql", "20261126130000_pos_receipt_transaction_filters.sql"]) {
+    for (const migration of ["20261126110000_pos_payment_tender.sql", "20261126120000_pos_excess_and_cash_movements.sql", "20261126130000_pos_receipt_transaction_filters.sql", "20261127130000_pos_transaction_cashier.sql"]) {
       await db.exec(await readFile(new URL(`../supabase/migrations/${migration}`, import.meta.url), "utf8"));
     }
     const paid = (await db.query("select public.pos_close_order_with_excess($1,2,$2,'bolivares','efectivo','',date '2026-11-20','',5080,5200,false) as data",[order,key])).rows[0].data;
     await db.exec(`insert into public.seller_orders(id,seller_id,payment_method,total_usd,idempotency_key,request_hash,expires_at,customer_name,customer_id)
       values('${secondOrder}','${secondSeller}','efectivo',0,'${secondKey}',sha256('filters'::bytea),now()+interval '30 minutes','Cliente Dos','87654321');`);
     await db.query("select public.pos_save_order($1,1,'divisas',$2)",[secondOrder,JSON.stringify([{kind:"variant",id:variant,quantity:1}])]);
+    await db.exec(`set test.actor = '${admin}'`);
     await db.query("select public.pos_close_order_with_excess($1,2,$2,'divisas','efectivo','',date '2026-11-21','',10,10,false)",[secondOrder,secondKey]);
+    await db.exec(`update public.profiles set full_name = 'Nombre actualizado' where id = '${cashier}'; set test.actor = '${cashier}'`);
     await db.exec("set role authenticated");
     const receipts = async (search, from, to, currency, offset = 0) => (await db.query("select public.pos_list_receipts_filtered($1,$2,$3,$4,$5) as data",[search,from,to,currency,offset])).rows[0].data;
     const movements = async (from, to, currency, offset = 0) => (await db.query("select * from public.pos_list_money_movements_filtered($1,$2,$3,$4)",[from,to,currency,offset])).rows;
@@ -954,8 +1012,10 @@ test("recibos y movimientos filtran fecha y moneda antes de paginar", async () =
     assert.equal((await receipts("",null,null,"bolivares",1)).length,0);
     assert.equal((await movements(null,null,"bolivares")).length,2);
     assert.deepEqual((await movements(null,null,"bolivares")).map(row => row.movement_type),["ingreso","vuelto"]);
+    assert.ok((await movements(null,null,"bolivares")).every(row => row.cashier_name === "Caja de prueba" && row.cashier_username === "caja01"));
     assert.equal((await movements("2026-11-21","2026-11-21",null)).length,1);
     assert.equal((await movements(null,null,"divisas"))[0].order_id,secondOrder);
+    assert.equal((await movements(null,null,"divisas"))[0].cashier_username,"admin");
     assert.equal((await movements(null,null,"bolivares",1))[0].movement_type,"vuelto");
     await db.exec(`reset role;
       with generated_orders as (
@@ -970,6 +1030,8 @@ test("recibos y movimientos filtran fecha y moneda antes de paginar", async () =
     assert.equal((await receipts("",null,null,null)).length,25);
     assert.equal((await receipts("",null,null,"bolivares"))[0].id,order);
     assert.equal((await movements(null,null,"bolivares")).length,2);
+    assert.equal((await movements(null,null,"divisas"))[0].cashier_name,"Nombre actualizado");
+    assert.equal((await movements(null,null,"divisas"))[0].cashier_username,"caja01");
     await assert.rejects(receipts("",null,null,"otra"),/Filtro de recibos invalido/);
     await assert.rejects(movements("2026-11-21","2026-11-20",null),/Filtro de transacciones invalido/);
     await db.exec(`set test.actor = '${seller}'`);

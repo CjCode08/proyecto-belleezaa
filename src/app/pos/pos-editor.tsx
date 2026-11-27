@@ -72,9 +72,10 @@ export function PosEditor({ order, availability, today, serverTime, returnHref }
   receiptQuery.set("origen", "recibos");
 
   useEffect(() => {
-    if (!dialog.current?.open) dialog.current?.showModal();
+    const element = dialog.current;
+    if (!element?.open) element?.showModal();
     const timer = window.setInterval(() => setClock(Date.now()),1000);
-    return () => window.clearInterval(timer);
+    return () => { window.clearInterval(timer); element?.close(); };
   },[]);
 
   function closeDialog() {
@@ -217,7 +218,7 @@ export function PosEditor({ order, availability, today, serverTime, returnHref }
         <p className="mt-1 text-sm text-slate-600" aria-live="polite">{current.status === "completada" ? "Pagada" : expired ? "Inhabilitada: reserva vencida" : `Reserva hasta ${date.format(new Date(current.expires_at))}`} · Revision {current.revision}</p>
       </header>
       {expired && <div className="mt-4 flex flex-wrap items-center justify-between gap-3 border-b border-amber-200 pb-4"><div><p className="text-sm font-semibold text-amber-900">Reserva vencida</p><p className="text-sm text-amber-900">Habilita la orden para validar stock, actualizar precios y reservar nuevamente durante 45 minutos.</p></div><div className="flex flex-wrap gap-2"><button type="button" className={`${button} mt-3`} disabled={savingLocked || !lines.length} onClick={save}>Habilitar orden</button><button type="button" className="mt-3 inline-flex min-h-11 items-center gap-2 rounded-xl border border-red-200 px-3 text-sm font-semibold text-red-700 hover:bg-red-50 disabled:opacity-50" disabled={pending} onClick={deleteExpired}><Trash2 size={16} aria-hidden="true" /> Eliminar orden</button></div></div>}
-      {current.status === "completada" ? <Link className={`${button} mt-5`} href={`/pos/${current.id}/recibo?${receiptQuery}`} prefetch={false}><ReceiptText size={18} aria-hidden="true" /> Ver recibo</Link> : <>
+      {current.status === "completada" ? <Link className={`${button} mt-5`} href={`/pos/${current.id}/recibo?${receiptQuery}`} prefetch={false} onNavigate={() => dialog.current?.close()}><ReceiptText size={18} aria-hidden="true" /> Ver recibo</Link> : <>
         <fieldset disabled={locked} className="mt-4">
           <legend className="text-sm font-semibold">Modalidad de la orden</legend>
           <div className="mt-2 flex flex-wrap gap-4">{(["bolivares","divisas"] as const).map(value => <label key={value} className="flex min-h-11 items-center gap-2 text-sm"><input type="radio" name={`currency-${order.id}`} checked={currency===value} onChange={() => {setCurrency(value);setMethod("efectivo");setDirty(true);setVerified(false);setExcessConfirmed(false);}} />{value === "bolivares" ? "Pago en bolivares" : "Pago en divisas"}</label>)}</div>

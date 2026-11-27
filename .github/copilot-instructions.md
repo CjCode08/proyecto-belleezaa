@@ -3,6 +3,7 @@
 ## Estado verificado 26/11/2026
 - Vendedores (`/vendedores/login`), POS (`/pos/login`) y Administración (`/administracion/login`) quedaron publicados en `https://www.belleezaa.com`. `SELLERS_PREVIEW_ENABLED=true` y `POS_PREVIEW_ENABLED=true` están activos en el contexto Production de Netlify; el checkout público no cambió.
 - El usuario confirmó que las migraciones necesarias para los tres módulos fueron ejecutadas en Supabase de producción. Las referencias anteriores a su estado exclusivo de pruebas quedan como historial y no deben interpretarse como bloqueo actual.
+- Caja: Transacciones identifica al usuario que realizó el cobro; requiere ejecutar manualmente una vez `supabase/migrations/20261127130000_pos_transaction_cashier.sql`. Al abrir el recibo se cierra el diálogo de la orden para permitir volver a Caja.
 
 ## Estado anterior verificado 17/11/2026
 - Se revisó el conjunto actual de cambios del proyecto y se validó la coherencia entre inventario, catálogo comercial y checkout preparado.

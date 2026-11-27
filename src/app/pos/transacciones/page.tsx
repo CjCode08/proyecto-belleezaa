@@ -43,6 +43,7 @@ export default async function TransactionsPage({
     : null;
   if (result?.error) console.error("No se pudieron consultar las transacciones:", result.error.code, result.error.message);
   const transactions = result?.data ?? [];
+  const missingCashierMigration = transactions.some((transaction) => !("cashier_username" in transaction));
   const errorMessage = result?.error && ["PGRST202", "42883"].includes(result.error.code)
     ? "Falta aplicar la migración de filtros de Caja en Supabase."
     : result?.error?.code === "42501"
@@ -71,6 +72,7 @@ export default async function TransactionsPage({
           {(from || to || selectedCurrency) && <Link href="/pos/transacciones" className="inline-flex min-h-11 items-center justify-center rounded-xl border border-rose-200 px-4 text-sm font-semibold text-rose-700 hover:bg-rose-50">Limpiar</Link>}
         </form>
 
+        {missingCashierMigration && <p role="alert" className="mb-4 text-sm text-red-700">Falta aplicar la migración de usuario de Caja en Supabase para identificar los cobros.</p>}
         {!validFilters ? <p role="alert" className="text-sm text-red-700">Revisa las fechas y la moneda: Desde debe ser anterior o igual a Hasta.</p>
           : result?.error ? <p role="alert" className="text-sm text-red-700">{errorMessage} <Link href={transactionsHref(from, to, selectedCurrency, page)} prefetch={false} className="font-semibold underline">Reintentar</Link></p>
             : transactions.length === 0 ? <p className="border-t border-rose-100 py-6 text-sm text-slate-600">No hay transacciones para las fechas seleccionadas.</p>
@@ -81,6 +83,7 @@ export default async function TransactionsPage({
                     <tr>
                       <th scope="col" className="border-b border-r border-rose-100 px-3 py-3">Fecha de pago</th>
                       <th scope="col" className="border-b border-r border-rose-100 px-3 py-3">Movimiento</th>
+                      <th scope="col" className="border-b border-r border-rose-100 px-3 py-3">Usuario de caja</th>
                       <th scope="col" className="border-b border-r border-rose-100 px-3 py-3">Modalidad</th>
                       <th scope="col" className="border-b border-r border-rose-100 px-3 py-3">Forma de pago</th>
                       <th scope="col" className="border-b border-r border-rose-100 px-3 py-3 text-right">Monto</th>
@@ -96,6 +99,7 @@ export default async function TransactionsPage({
                       return <tr key={`${transaction.receipt_id}:${transaction.movement_type}`}>
                         <td className="border-b border-r border-rose-100 px-3 py-3 whitespace-nowrap"><time dateTime={transaction.paid_on}>{dateFormat.format(new Date(`${transaction.paid_on}T12:00:00Z`))}</time></td>
                         <td className="border-b border-r border-rose-100 px-3 py-3 font-medium">{transaction.movement_type === "vuelto" ? "Salida · vuelto" : "Ingreso"}</td>
+                        <td className="border-b border-r border-rose-100 px-3 py-3">{transaction.cashier_name || "Nombre no disponible"}<span className="block text-xs text-slate-600">{transaction.cashier_username || "Usuario no disponible"}</span></td>
                         <td className="border-b border-r border-rose-100 px-3 py-3">{currency === "bolivares" ? "Bolívares" : "Divisas"}</td>
                         <td className="border-b border-r border-rose-100 px-3 py-3">{method}</td>
                         <td className="border-b border-r border-rose-100 px-3 py-3 text-right font-semibold tabular-nums whitespace-nowrap">{transaction.amount === null ? "No registrado" : `${transaction.movement_type === "vuelto" ? "-" : "+"}${currency === "bolivares" ? `Bs. ${bolivarAmountFormat.format(Number(transaction.amount))}` : posMoney(Number(transaction.amount), currency)}`}</td>
